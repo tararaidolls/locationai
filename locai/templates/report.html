@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ title }} · {{ address }}</title>
+<style>
+  @page { size: A4; margin: 14mm 14mm 16mm; }
+  :root {
+    --surface: #ffffff;
+    --surface-2: #f3f2ef;
+    --rule: #e4e3de;
+    --text-primary: #0b0b0b;
+    --text-secondary: #52514e;
+    --text-muted: #7a7974;
+    --accent: #2a78d6;
+    --bar-track: #ecebe7;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--surface); color: var(--text-primary); }
+  body { font-family: Inter, "DejaVu Sans", "Helvetica Neue", Arial, sans-serif; font-size: 10pt; line-height: 1.45;
+         -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .page { max-width: 182mm; margin: 0 auto; }
+  .page + .page { break-before: page; }
+  h1, h2, h3 { margin: 0; font-weight: 650; letter-spacing: -0.01em; }
+  h2 { font-size: 13pt; margin: 0 0 3mm; }
+  h3 { font-size: 10.5pt; margin: 0 0 2mm; }
+  p { margin: 0 0 2mm; }
+  .muted { color: var(--text-muted); }
+  .secondary { color: var(--text-secondary); }
+  .num { font-variant-numeric: tabular-nums; }
+
+  /* Header */
+  .brand { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1px solid var(--rule);
+           padding-bottom: 2.5mm; margin-bottom: 6mm; }
+  .brand .logo { font-weight: 750; font-size: 11pt; letter-spacing: 0.02em; }
+  .brand .logo span { color: var(--accent); }
+  .brand .meta { font-size: 8.5pt; color: var(--text-muted); }
+  .addr h1 { font-size: 17pt; line-height: 1.2; }
+  .addr .sub { margin-top: 1.5mm; color: var(--text-secondary); }
+  .warn { margin-top: 2mm; font-size: 9pt; color: var(--text-secondary); }
+
+  /* Hero */
+  .hero { display: grid; grid-template-columns: 52mm 1fr; gap: 8mm; margin: 7mm 0 6mm; align-items: center; }
+  .score-card { background: var(--surface-2); border-radius: 4mm; padding: 5mm 5mm 4.5mm; text-align: center; }
+  .score { font-size: 46pt; font-weight: 750; line-height: 1; letter-spacing: -0.03em; }
+  .score small { font-size: 13pt; font-weight: 500; color: var(--text-muted); letter-spacing: 0; }
+  .grade { display: inline-flex; align-items: center; gap: 2mm; margin-top: 3mm; font-size: 9pt; color: var(--text-secondary); }
+  .grade b { display: inline-grid; place-items: center; width: 7mm; height: 7mm; border-radius: 50%;
+             background: var(--text-primary); color: var(--surface); font-size: 10pt; }
+  .verdict p { font-size: 10.5pt; }
+  .facts { display: flex; gap: 5mm; margin-top: 3mm; font-size: 9pt; color: var(--text-secondary); }
+  .facts b { color: var(--text-primary); font-weight: 650; }
+
+  /* Tiles */
+  .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3mm; margin-bottom: 7mm; }
+  .tile { border: 1px solid var(--rule); border-radius: 3mm; padding: 3mm 3.5mm; }
+  .tile .v { font-size: 16pt; font-weight: 700; letter-spacing: -0.02em; }
+  .tile .l { font-size: 8.5pt; color: var(--text-secondary); line-height: 1.3; }
+
+  /* Dimension bars */
+  .dims { width: 100%; border-collapse: collapse; margin-bottom: 6mm; }
+  .dims td { padding: 1.6mm 0; vertical-align: middle; }
+  .dims .name { width: 50mm; }
+  .dims .w { width: 16mm; text-align: right; color: var(--text-muted); font-size: 8.5pt; }
+  .dims .val { width: 12mm; text-align: right; font-weight: 650; }
+  .track { position: relative; height: 3.2mm; background: var(--bar-track); border-radius: 1mm; margin: 0 4mm; }
+  .fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--accent); border-radius: 0 1mm 1mm 0; }
+  .na { margin: 0 4mm; font-size: 8.5pt; color: var(--text-muted); }
+
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; }
+  .list { margin: 0; padding: 0; list-style: none; }
+  .list li { position: relative; padding-left: 5mm; margin-bottom: 2mm; font-size: 9.5pt; }
+  .list li::before { position: absolute; left: 0; top: 0; font-weight: 700; }
+  .plus li::before { content: "+"; }
+  .minus li::before { content: "−"; }
+
+  /* Map page */
+  .map { border: 1px solid var(--rule); border-radius: 3mm; overflow: hidden; }
+  .map svg { display: block; font-family: inherit; }
+  .legend { display: flex; flex-wrap: wrap; gap: 2mm 5mm; margin: 2.5mm 0 6mm; font-size: 8.5pt; color: var(--text-secondary); }
+  .legend span { display: inline-flex; align-items: center; gap: 1.5mm; }
+  .key-line { display: inline-block; width: 6mm; height: 2px; border-radius: 1px; }
+  .key-dot { display: inline-block; width: 3mm; height: 3mm; border-radius: 50%; }
+  .key-hex { display: inline-block; width: 3.4mm; height: 3mm; background: #8a8984; opacity: 0.3;
+             clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%); }
+  .key-star { font-size: 10pt; line-height: 1; color: var(--text-primary); }
+  .key-num { display: inline-grid; place-items: center; width: 4mm; height: 4mm; border-radius: 50%; background: #52514e;
+             color: var(--surface); font-size: 7pt; font-weight: 700; }
+
+  table.data { width: 100%; border-collapse: collapse; font-size: 9pt; }
+  table.data th { text-align: left; font-weight: 600; color: var(--text-secondary); font-size: 8pt;
+                  border-bottom: 1px solid var(--rule); padding: 1.5mm 2mm 1.5mm 0; }
+  table.data td { border-bottom: 1px solid var(--rule); padding: 1.6mm 2mm 1.6mm 0; vertical-align: top; }
+  table.data tr { break-inside: avoid; }
+  table.data .r { text-align: right; }
+  table.data .nw { white-space: nowrap; }
+  table.metrics { font-size: 8.5pt; }
+  table.metrics td { padding-top: 1.1mm; padding-bottom: 1.1mm; }
+  .mini { display: inline-block; width: 16mm; height: 2mm; background: var(--bar-track); border-radius: 1mm;
+          position: relative; vertical-align: middle; margin-right: 2mm; }
+  .mini i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--accent); border-radius: 0 1mm 1mm 0; }
+  .q { display: inline-block; min-width: 4.5mm; text-align: center; border: 1px solid var(--rule); border-radius: 1mm;
+       font-size: 7.5pt; color: var(--text-secondary); }
+
+  .note { font-size: 8.5pt; color: var(--text-secondary); }
+  .note h3 { color: var(--text-primary); margin-top: 3mm; }
+  .note ul { margin: 0 0 2mm; padding-left: 4.5mm; }
+  .note li { margin-bottom: 1mm; }
+  .disclaimer { margin-top: 3mm; padding: 3mm 4mm; background: var(--surface-2); border-radius: 2.5mm; font-size: 8pt;
+                color: var(--text-secondary); }
+  .section { margin-bottom: 6mm; break-inside: avoid; }
+</style>
+</head>
+<body>
+
+<!-- ============ Page 1: summary ============ -->
+<section class="page">
+  <div class="brand">
+    <div class="logo">LOCATION <span>AI</span></div>
+    <div class="meta">Звіт від {{ date }} · {{ city }}</div>
+  </div>
+
+  <div class="addr">
+    <h1>{{ address }}</h1>
+    <div class="sub">{{ profile }} · зона обслуговування {{ walk_minutes }} хв пішки · {{ coords }}</div>
+    {% if not address_exact %}<div class="warn">⚠ Точну адресу не знайдено в реєстрі — використано найближчу.</div>{% endif %}
+  </div>
+
+  <div class="hero">
+    <div class="score-card">
+      <div class="score num">{{ score }}<small>/100</small></div>
+      <div class="grade"><b>{{ grade }}</b>{{ grade_text }}</div>
+    </div>
+    <div class="verdict">
+      <p>{{ verdict }}</p>
+      <div class="facts">
+        <div>Місце в місті: <b>краще за {{ percentile }}%</b></div>
+        <div>Впевненість даних: <b>{{ confidence }}</b> ({{ confidence_value }})</div>
+      </div>
+      {% for c in caps %}<div class="warn">⚠ {{ c }}</div>{% endfor %}
+    </div>
+  </div>
+
+  <div class="tiles">
+    {% for t in tiles %}
+    <div class="tile"><div class="v num">{{ t.value }}</div><div class="l">{{ t.label }}</div></div>
+    {% endfor %}
+  </div>
+
+  <div class="section">
+    <h2>Оцінка за вимірами</h2>
+    <table class="dims">
+      {% for d in dimensions %}
+      <tr>
+        <td class="name">{{ d.name }}</td>
+        <td>{% if d.score is not none %}<div class="track"><div class="fill" style="width: {{ d.score }}%"></div></div>
+            {% else %}<div class="na">немає даних у прототипі — не враховано в балі</div>{% endif %}</td>
+        <td class="val num">{{ d.score if d.score is not none else "—" }}</td>
+        <td class="w">вага {{ d.weight }}%</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+
+  <div class="cols section">
+    <div>
+      <h3>Сильні сторони</h3>
+      {% if strengths %}<ul class="list plus">{% for s in strengths %}<li>{{ s }}</li>{% endfor %}</ul>
+      {% else %}<p class="muted">Немає метрик із балом вище 65.</p>{% endif %}
+    </div>
+    <div>
+      <h3>Слабкі сторони</h3>
+      {% if weaknesses %}<ul class="list minus">{% for s in weaknesses %}<li>{{ s }}</li>{% endfor %}</ul>
+      {% else %}<p class="muted">Немає метрик із балом нижче 35.</p>{% endif %}
+    </div>
+  </div>
+</section>
+
+<!-- ============ Page 2: map ============ -->
+<section class="page">
+  <div class="brand">
+    <div class="logo">LOCATION <span>AI</span></div>
+    <div class="meta">{{ address }}</div>
+  </div>
+  <h2>Зона обслуговування і оточення</h2>
+  <div class="map">{{ map_svg | safe }}</div>
+  <div class="legend">
+    <span><span class="key-star">★</span>Ваша адреса</span>
+    {% for b in time_bands %}<span><i class="key-line" style="background: {{ b.color }}"></i>Вулиці {{ b.label }}</span>{% endfor %}
+    <span><i class="key-dot" style="background: {{ colors.competitor }}"></i>Конкуренти</span>
+    <span><i class="key-dot" style="background: {{ colors.synergy }}"></i>Синергія в зоні ({{ synergy_groups }})</span>
+    <span><i class="key-hex"></i>Густота населення</span>
+    {% if nearby %}<span><i class="key-num">1</i>Кращі локації поруч</span>{% endif %}
+  </div>
+
+  <div class="cols">
+    <div class="section">
+      <h3>Найближчі конкуренти ({{ competitors_total }} у зоні)</h3>
+      {% if competitors %}
+      <table class="data">
+        <tr><th>Назва</th><th>Категорія</th><th class="r">Хв пішки</th></tr>
+        {% for c in competitors %}<tr><td>{{ c.name }}</td><td class="secondary">{{ c.category }}</td><td class="r num">{{ c.minutes }}</td></tr>{% endfor %}
+      </table>
+      {% else %}<p class="muted">У зоні обслуговування конкурентів не знайдено.</p>{% endif %}
+    </div>
+    <div class="section">
+      <h3>Кращі локації поруч (до 1 км)</h3>
+      {% if nearby %}
+      <table class="data">
+        <tr><th>#</th><th>Адреса</th><th class="r">Бал</th><th class="r">Відстань</th></tr>
+        {% for n in nearby %}<tr><td>{{ n.n }}</td><td>{{ n.address }}</td><td class="r num">{{ n.score }} <span class="muted">({{ n.delta }})</span></td><td class="r num">{{ n.distance }} м</td></tr>{% endfor %}
+      </table>
+      {% else %}<p class="muted">Поблизу немає комерційних локацій із помітно вищим балом — ця точка одна з найкращих у радіусі 1 км.</p>{% endif %}
+    </div>
+  </div>
+</section>
+
+<!-- ============ Page 3: metrics & method ============ -->
+<section class="page">
+  <div class="brand">
+    <div class="logo">LOCATION <span>AI</span></div>
+    <div class="meta">{{ address }}</div>
+  </div>
+  <h2>Усі метрики</h2>
+  <p class="note">Бал метрики (0–100) показує, яку частку комерційних локацій міста ця адреса випереджає. Для конкуренції менше конкурентів — вищий бал (для закладів харчування оптимум — помірний кластер). Буква коду — вимір: D — попит мешканців, W — денне населення, A — трафік і доступність, C — конкуренція, S — синергія. Якість даних: A — висока, B — середня, C — наближена оцінка.</p>
+  <table class="data metrics section">
+    <tr><th>Код</th><th>Метрика</th><th class="r">Значення</th><th>Бал</th><th>Якість</th><th>Джерело</th></tr>
+    {% for m in metrics %}
+    <tr>
+      <td class="muted">{{ m.code }}</td>
+      <td>{{ m.label }}</td>
+      <td class="r num nw">{{ m.value }} <span class="muted">{{ m.unit }}</span></td>
+      <td class="num nw"><span class="mini"><i style="width: {{ m.score }}%"></i></span>{{ m.score }}</td>
+      <td><span class="q">{{ m.quality }}</span></td>
+      <td class="secondary">{{ m.source }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <div class="note">
+    <h3>Як рахується оцінка</h3>
+    <ul>
+      <li>Зона обслуговування — реальний час пішки вулицями (мережа Overture/OSM), а не коло на карті. Близькі мешканці та заклади важать більше: вага = e<sup>−t/τ</sup>.</li>
+      <li>Кожна метрика порівнюється з 400 комерційно активними локаціями цього ж міста; бал = перцентиль.</li>
+      <li>Модель Хаффа оцінює, яку частку мешканців зони приверне новий заклад з урахуванням відстані до всіх конкурентів.</li>
+      <li>Загальний бал — зважене середнє вимірів; ваги залежать від типу бізнесу.</li>
+    </ul>
+    <h3>Чого ще немає у цій версії</h3>
+    <ul>
+      <li>Ризики й стабільність (рівень закриттів бізнесів), доходи мешканців, вартість оренди, рейтинги конкурентів, точний розклад громадського транспорту.</li>
+    </ul>
+    <h3>Джерела даних</h3>
+    <ul>
+      <li>Overture Maps Foundation (заклади, вулична мережа, адреси; містить дані OpenStreetMap і BAN/Etalab 2.0).</li>
+      <li>Meta Data for Good — High Resolution Settlement Layer (населення та демографія, CC BY 4.0).</li>
+    </ul>
+  </div>
+  <div class="disclaimer">Звіт є аналітичною оцінкою на основі відкритих даних і не гарантує комерційного успіху. Перед підписанням оренди перевірте локацію особисто: потік людей у різний час доби, стан приміщення, умови оренди та дозволи.</div>
+</section>
+
+</body>
+</html>

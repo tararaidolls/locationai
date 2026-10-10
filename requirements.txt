@@ -7,4 +7,5 @@ python-igraph>=0.11
 h3>=4.0
 rasterio>=1.4
 pyyaml>=6.0
+jinja2>=3.1
 pytest>=8.0

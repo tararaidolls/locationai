@@ -78,7 +78,8 @@ class MetricEngine:
         self.comp_mask = comp
         self.comp_xy = self.place_xy[comp]
 
-    def _times(self, x: float, y: float, max_min: float):
+    def times(self, x: float, y: float, max_min: float):
+        """Walking minutes from (x, y) to every place and every population cell."""
         dist = self.city.net.distances_from_point(x, y, max_min * WALK_SPEED_M_PER_MIN)
         t_places = path_distances(dist, self.place_snap) / WALK_SPEED_M_PER_MIN
         t_cells = path_distances(dist, self.cell_snap) / WALK_SPEED_M_PER_MIN
@@ -87,7 +88,7 @@ class MetricEngine:
     def compute(self, x: float, y: float) -> dict[str, float]:
         pr = self.profile
         T, tau = pr.walk_minutes, pr.tau_min
-        t_places, t_cells = self._times(x, y, max(T, TRANSIT_RADIUS_MIN))
+        t_places, t_cells = self.times(x, y, max(T, TRANSIT_RADIUS_MIN))
 
         in_cells = t_cells <= T
         w_cells = np.where(in_cells, decay(t_cells, tau), 0.0)

@@ -89,3 +89,15 @@ def test_geocode_coordinates_and_errors():
         geocode("1 rue nowhere", ADDR)
     typo = geocode("10 rue de la Republiqe", ADDR, "Lyon")
     assert not typo.exact and typo.label.startswith("≈ 10 Rue de la République")
+
+
+def test_metric_sentences_read_naturally():
+    from locai.pdf_report import _metric_sentence
+
+    assert _metric_sentence("D1", 4415.0, 66.0, True) == \
+        "Населення в зоні (зважене): 4 415 осіб. Краще, ніж у 66% комерційних локацій міста."
+    assert "Гірше, ніж у 70%" in _metric_sentence("A3", 2.0, 30.0, False)
+    assert "Конкурентний тиск вищий, ніж у 80%" in _metric_sentence("C1", 9.0, 20.0, False)
+    assert "Один із найслабших" in _metric_sentence("C4", 63.5, 0.0, False)
+    # Abstract units are not shown to the reader.
+    assert "індекс" not in _metric_sentence("S1", 83.0, 97.0, True)

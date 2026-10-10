@@ -1,0 +1,151 @@
+{
+  "address": "12 Rue Paul Bert, 69003 Lyon 3e Arrondissement",
+  "address_exact": true,
+  "lat": 45.755668,
+  "lon": 4.844436,
+  "profile": "beauty_salon",
+  "score": 69.8,
+  "grade": "B",
+  "city_percentile": 82.5,
+  "confidence": 0.58,
+  "caps_applied": [],
+  "dimensions": {
+    "D": 94.3,
+    "W": 98.2,
+    "A": 98.4,
+    "C": 0.9,
+    "S": 96.8,
+    "R": null
+  },
+  "metrics": {
+    "D1": {
+      "label": "Населення в зоні (зважене)",
+      "value": 10491.19,
+      "unit": "осіб",
+      "score": 93.8,
+      "quality": "B",
+      "source": "Meta HRSL ~30 м"
+    },
+    "D2": {
+      "label": "Цільовий сегмент (зважений)",
+      "value": 4726.39,
+      "unit": "осіб",
+      "score": 94.5,
+      "quality": "B",
+      "source": "Meta HRSL, демографічні шари"
+    },
+    "W1": {
+      "label": "Офіси та бізнес-послуги поруч",
+      "value": 218.72,
+      "unit": "зваж. к-сть",
+      "score": 98.2,
+      "quality": "C",
+      "source": "Overture Places"
+    },
+    "W2": {
+      "label": "Навчальні заклади поруч",
+      "value": 30.01,
+      "unit": "зваж. к-сть",
+      "score": 97.0,
+      "quality": "C",
+      "source": "Overture Places"
+    },
+    "W3": {
+      "label": "Готелі поруч",
+      "value": 18.84,
+      "unit": "зваж. к-сть",
+      "score": 97.5,
+      "quality": "C",
+      "source": "Overture Places"
+    },
+    "A1": {
+      "label": "Громадський транспорт",
+      "value": 8.59,
+      "unit": "індекс",
+      "score": 99.5,
+      "quality": "C",
+      "source": "Overture Places + лінії трамваю/метро"
+    },
+    "A2": {
+      "label": "Центральність вулиці",
+      "value": 561520.0,
+      "unit": "betweenness",
+      "score": 97.0,
+      "quality": "B",
+      "source": "мережа Overture Transportation"
+    },
+    "A3": {
+      "label": "Щільність торгівлі й послуг (~200 м)",
+      "value": 123.0,
+      "unit": "закладів",
+      "score": 98.8,
+      "quality": "B",
+      "source": "Overture Places"
+    },
+    "C1": {
+      "label": "Конкуренти в зоні (зважено)",
+      "value": 57.81,
+      "unit": "зваж. к-сть",
+      "score": 0.8,
+      "quality": "B",
+      "source": "Overture Places"
+    },
+    "C2": {
+      "label": "Насиченість: сегмент на 1 конкурента",
+      "value": 80.37,
+      "unit": "осіб",
+      "score": 2.0,
+      "quality": "B",
+      "source": "похідна D2 / C1"
+    },
+    "C4": {
+      "label": "Очікувані клієнти за моделлю Хаффа",
+      "value": 63.49,
+      "unit": "осіб",
+      "score": 0.2,
+      "quality": "B",
+      "source": "похідна, модель Хаффа"
+    },
+    "S1": {
+      "label": "Синергія з сусідніми закладами",
+      "value": 83.04,
+      "unit": "індекс",
+      "score": 96.8,
+      "quality": "B",
+      "source": "Overture Places"
+    }
+  },
+  "strengths": [
+    "D2",
+    "W1",
+    "S1"
+  ],
+  "weaknesses": [
+    "C4",
+    "C2",
+    "C1"
+  ],
+  "better_nearby": [
+    {
+      "address": "12 Rue Saint Amour",
+      "lat": 45.755521159455576,
+      "lon": 4.850458338020329,
+      "score": 75.9,
+      "distance_m": 468
+    },
+    {
+      "address": "208bis Rue Garibaldi",
+      "lat": 45.75841935421183,
+      "lon": 4.852192006890321,
+      "score": 75.7,
+      "distance_m": 675
+    },
+    {
+      "address": "54 Rue des Rancy",
+      "lat": 45.756120342588,
+      "lon": 4.854808358246034,
+      "score": 75.4,
+      "distance_m": 807
+    }
+  ]
+}

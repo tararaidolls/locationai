@@ -1,7 +1,7 @@
 """CLI.
 
   python -m locai build-city lyon
-  python -m locai score "10 rue de la République" --profile cafe [--city lyon] [--json out.json]
+  python -m locai score "10 rue de la République" --profile cafe [--city lyon] [--json out.json] [--pdf out.pdf]
 """
 import argparse
 import json
@@ -26,6 +26,8 @@ def main(argv=None) -> int:
     s.add_argument("--profile", required=True, choices=list_profiles())
     s.add_argument("--city", default="lyon", choices=sorted(CITIES))
     s.add_argument("--json", help="зберегти результат у JSON")
+    s.add_argument("--pdf", help="зберегти звіт у PDF (потрібен Chromium/Chrome)")
+    s.add_argument("--html", help="зберегти веб-версію звіту в HTML")
     s.add_argument("--no-nearby", action="store_true", help="не шукати кращих локацій поруч (швидше)")
     ap.add_argument("-v", "--verbose", action="store_true")
     args = ap.parse_args(argv)
@@ -55,6 +57,16 @@ def main(argv=None) -> int:
     if args.json:
         with open(args.json, "w") as f:
             json.dump(to_json(geo, profile, result, nearby), f, ensure_ascii=False, indent=2)
+    if args.pdf or args.html:
+        from .pdf_report import build_context, html_to_pdf, render_html
+
+        page = render_html(build_context(city, scorer, geo, result, nearby))
+        if args.html:
+            with open(args.html, "w", encoding="utf-8") as f:
+                f.write(page)
+        if args.pdf:
+            html_to_pdf(page, args.pdf)
+            print(f"PDF: {args.pdf}")
     return 0
 
 

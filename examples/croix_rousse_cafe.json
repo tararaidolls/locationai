@@ -1,42 +1,42 @@
 {
-  "address": "≈ 9 Boulevard de la Croix-Rousse, 69004 Lyon 4e Arrondissement",
-  "address_exact": false,
-  "lat": 45.772006,
-  "lon": 4.817412,
+  "address": "20 Boulevard de la Croix-Rousse, 69001 Lyon 1er Arrondissement",
+  "address_exact": true,
+  "lat": 45.772096,
+  "lon": 4.81898,
   "profile": "cafe",
-  "score": 57.6,
-  "grade": "C",
-  "city_percentile": 62.2,
+  "score": 66.0,
+  "grade": "B",
+  "city_percentile": 73.0,
   "confidence": 0.54,
   "caps_applied": [],
   "dimensions": {
-    "D": 66.7,
-    "W": 57.6,
-    "A": 50.6,
-    "C": 59.1,
-    "S": 64.0,
+    "D": 79.3,
+    "W": 55.0,
+    "A": 70.8,
+    "C": 54.3,
+    "S": 70.8,
     "R": null
   },
   "metrics": {
     "D1": {
       "label": "Населення в зоні (зважене)",
-      "value": 2060.78,
+      "value": 2643.43,
       "unit": "осіб",
-      "score": 66.5,
+      "score": 79.5,
       "quality": "B",
       "source": "Meta HRSL ~30 м"
     },
     "D2": {
       "label": "Цільовий сегмент (зважений)",
-      "value": 1742.54,
+      "value": 2229.19,
       "unit": "осіб",
-      "score": 66.8,
+      "score": 79.2,
       "quality": "B",
       "source": "Meta HRSL, демографічні шари"
     },
     "W1": {
       "label": "Офіси та бізнес-послуги поруч",
-      "value": 4.31,
+      "value": 4.33,
       "unit": "зваж. к-сть",
       "score": 56.0,
       "quality": "C",
@@ -44,17 +44,17 @@
     },
     "W2": {
       "label": "Навчальні заклади поруч",
-      "value": 3.29,
+      "value": 4.03,
       "unit": "зваж. к-сть",
-      "score": 75.2,
+      "score": 78.5,
       "quality": "C",
       "source": "Overture Places"
     },
     "W3": {
       "label": "Готелі поруч",
-      "value": 0.21,
+      "value": 0.09,
       "unit": "зваж. к-сть",
-      "score": 43.0,
+      "score": 29.5,
       "quality": "C",
       "source": "Overture Places"
     },
@@ -68,49 +68,49 @@
     },
     "A2": {
       "label": "Центральність вулиці",
-      "value": 664919.0,
+      "value": 495252.0,
       "unit": "betweenness",
-      "score": 98.8,
+      "score": 95.5,
       "quality": "B",
       "source": "мережа Overture Transportation"
     },
     "A3": {
       "label": "Щільність торгівлі й послуг (~200 м)",
-      "value": 0.0,
+      "value": 5.0,
       "unit": "закладів",
-      "score": 14.1,
+      "score": 67.8,
       "quality": "B",
       "source": "Overture Places"
     },
     "C1": {
       "label": "Конкуренти в зоні (зважено)",
-      "value": 0.92,
+      "value": 1.18,
       "unit": "зваж. к-сть",
-      "score": 95.8,
+      "score": 91.4,
       "quality": "B",
       "source": "Overture Places"
     },
     "C2": {
       "label": "Насиченість: сегмент на 1 конкурента",
-      "value": 906.29,
+      "value": 1020.45,
       "unit": "осіб",
-      "score": 63.5,
+      "score": 68.5,
       "quality": "B",
       "source": "похідна D2 / C1"
     },
     "C4": {
       "label": "Очікувані клієнти за моделлю Хаффа",
-      "value": 1310.0,
+      "value": 1052.26,
       "unit": "осіб",
-      "score": 38.5,
+      "score": 28.8,
       "quality": "B",
       "source": "похідна, модель Хаффа"
     },
     "S1": {
       "label": "Синергія з сусідніми закладами",
-      "value": 10.51,
+      "value": 12.76,
       "unit": "індекс",
-      "score": 64.0,
+      "score": 70.8,
       "quality": "B",
       "source": "Overture Places"
     }
@@ -118,33 +118,34 @@
   "strengths": [
     "A2",
     "D2",
-    "W2"
+    "A3"
   ],
   "weaknesses": [
-    "A3",
-    "A1"
+    "A1",
+    "W3",
+    "C4"
   ],
   "better_nearby": [
+    {
+      "address": "1 Rue Hippolyte Flandrin",
+      "lat": 45.76871214401812,
+      "lon": 4.83040854626706,
+      "score": 87.9,
+      "distance_m": 963
+    },
     {
       "address": "138 Boulevard de la Croix-Rousse",
       "lat": 45.77390791559821,
       "lon": 4.8295244048104164,
       "score": 86.9,
-      "distance_m": 964
-    },
-    {
-      "address": "16 Rue Sergent Michel Berthet",
-      "lat": 45.773202178113294,
-      "lon": 4.805159024708976,
-      "score": 84.2,
-      "distance_m": 961
+      "distance_m": 843
     },
     {
       "address": "17 Rue Pierre Blanc",
       "lat": 45.77100997892061,
       "lon": 4.827791518767046,
       "score": 80.1,
-      "distance_m": 814
+      "distance_m": 695
     }
   ]
 }

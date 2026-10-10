@@ -15,12 +15,29 @@ python -m locai build-city lyon          # ~3 хв, один раз: заван�
 python -m locai score "10 rue de la République" --profile cafe
 python -m locai score "25 cours Émile Zola, Villeurbanne" --profile beauty_salon --json out.json
 python -m locai score "45.7578, 4.8320" --profile pet_shop
+python -m locai score "12 rue Paul Bert" --profile beauty_salon --pdf report.pdf --html report.html
 
 pytest -q
 ```
 
 Перша оцінка для кожного профілю ще будує еталонний розподіл міста (~5 с, кешується).
-Приклади результатів — у [`examples/`](examples/).
+Приклади результатів (текст, JSON і PDF) — у [`examples/`](examples/), наприклад
+[`paul_bert_beauty_salon.pdf`](examples/paul_bert_beauty_salon.pdf).
+
+## PDF-звіт
+
+`--pdf` друкує звіт через headless Chromium/Chrome (шукається в `PATH`, шлях можна задати
+змінною `LOCAI_CHROME`). `--html` зберігає ту саму сторінку як веб-версію звіту.
+
+Три сторінки A4:
+1. **Підсумок** — бал, клас A–E, місце в місті, впевненість, ключові цифри, оцінка за вимірами,
+   сильні й слабкі сторони.
+2. **Карта** (власний SVG, без сторонніх тайлів) — вулиці, пофарбовані за часом пішки (5/10/15 хв),
+   густота населення, конкуренти, синергії в зоні, кращі локації поруч; таблиці найближчих
+   конкурентів і кращих точок.
+3. **Усі метрики** — значення, бал, якість даних, джерело; методика, обмеження, джерела, дисклеймер.
+
+Шаблон: [`locai/templates/report.html`](locai/templates/report.html), логіка: [`locai/pdf_report.py`](locai/pdf_report.py).
 
 ## Як це працює
 
@@ -43,6 +60,7 @@ pytest -q
 | `locai/metrics.py` | каталог метрик і їх розрахунок, модель Хаффа |
 | `locai/scoring.py` | нормалізація, агрегація, впевненість, «краще поруч» |
 | `locai/geocode.py` | геокодер (координати або «номер вулиця[, місто/індекс]») |
+| `locai/pdf_report.py`, `locai/templates/` | HTML/PDF-звіт із SVG-картою |
 | `profiles/*.yaml` | профілі бізнесу: зона, сегмент, конкуренти, синергії, ваги, обмеження |
 | `profiles/_groups.yaml` | групи закладів через токени таксономії Overture |
 
