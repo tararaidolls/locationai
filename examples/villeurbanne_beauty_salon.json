@@ -1,0 +1,151 @@
+{
+  "address": "25 Cours Emile Zola, 69100 Villeurbanne",
+  "address_exact": true,
+  "lat": 45.770806,
+  "lon": 4.864361,
+  "profile": "beauty_salon",
+  "score": 70.0,
+  "grade": "B",
+  "city_percentile": 83.2,
+  "confidence": 0.58,
+  "caps_applied": [],
+  "dimensions": {
+    "D": 95.4,
+    "W": 94.8,
+    "A": 97.0,
+    "C": 5.5,
+    "S": 90.0,
+    "R": null
+  },
+  "metrics": {
+    "D1": {
+      "label": "Населення в зоні (зважене)",
+      "value": 10975.67,
+      "unit": "осіб",
+      "score": 95.2,
+      "quality": "B",
+      "source": "Meta HRSL ~30 м"
+    },
+    "D2": {
+      "label": "Цільовий сегмент (зважений)",
+      "value": 4799.93,
+      "unit": "осіб",
+      "score": 95.5,
+      "quality": "B",
+      "source": "Meta HRSL, демографічні шари"
+    },
+    "W1": {
+      "label": "Офіси та бізнес-послуги поруч",
+      "value": 114.64,
+      "unit": "зваж. к-сть",
+      "score": 94.8,
+      "quality": "C",
+      "source": "Overture Places"
+    },
+    "W2": {
+      "label": "Навчальні заклади поруч",
+      "value": 19.9,
+      "unit": "зваж. к-сть",
+      "score": 91.2,
+      "quality": "C",
+      "source": "Overture Places"
+    },
+    "W3": {
+      "label": "Готелі поруч",
+      "value": 7.42,
+      "unit": "зваж. к-сть",
+      "score": 89.2,
+      "quality": "C",
+      "source": "Overture Places"
+    },
+    "A1": {
+      "label": "Громадський транспорт",
+      "value": 7.62,
+      "unit": "індекс",
+      "score": 99.2,
+      "quality": "C",
+      "source": "Overture Places + лінії трамваю/метро"
+    },
+    "A2": {
+      "label": "Центральність вулиці",
+      "value": 1011962.0,
+      "unit": "betweenness",
+      "score": 99.8,
+      "quality": "B",
+      "source": "мережа Overture Transportation"
+    },
+    "A3": {
+      "label": "Щільність торгівлі й послуг (~200 м)",
+      "value": 40.0,
+      "unit": "закладів",
+      "score": 92.1,
+      "quality": "B",
+      "source": "Overture Places"
+    },
+    "C1": {
+      "label": "Конкуренти в зоні (зважено)",
+      "value": 41.01,
+      "unit": "зваж. к-сть",
+      "score": 3.0,
+      "quality": "B",
+      "source": "Overture Places"
+    },
+    "C2": {
+      "label": "Насиченість: сегмент на 1 конкурента",
+      "value": 114.26,
+      "unit": "осіб",
+      "score": 10.0,
+      "quality": "B",
+      "source": "похідна D2 / C1"
+    },
+    "C4": {
+      "label": "Очікувані клієнти за моделлю Хаффа",
+      "value": 149.74,
+      "unit": "осіб",
+      "score": 3.2,
+      "quality": "B",
+      "source": "похідна, модель Хаффа"
+    },
+    "S1": {
+      "label": "Синергія з сусідніми закладами",
+      "value": 27.19,
+      "unit": "індекс",
+      "score": 90.0,
+      "quality": "B",
+      "source": "Overture Places"
+    }
+  },
+  "strengths": [
+    "D2",
+    "W1",
+    "S1"
+  ],
+  "weaknesses": [
+    "C4",
+    "C2",
+    "C1"
+  ],
+  "better_nearby": [
+    {
+      "address": "20 Rue Colin",
+      "lat": 45.77470567763978,
+      "lon": 4.873917412592035,
+      "score": 78.9,
+      "distance_m": 858
+    },
+    {
+      "address": "15bis Rue Germain",
+      "lat": 45.765413528542744,
+      "lon": 4.864361417462919,
+      "score": 76.7,
+      "distance_m": 596
+    },
+    {
+      "address": "14 Rue Maurice Flandin",
+      "lat": 45.76251555343974,
+      "lon": 4.862626988646333,
+      "score": 76.6,
+      "distance_m": 926
+    }
+  ]
+}

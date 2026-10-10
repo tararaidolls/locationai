@@ -1,0 +1,125 @@
+{
+  "address": "300 Avenue Jean Jaurès, 69007 Lyon 7e Arrondissement",
+  "address_exact": true,
+  "lat": 45.72896,
+  "lon": 4.832013,
+  "profile": "pet_shop",
+  "score": 71.7,
+  "grade": "B",
+  "city_percentile": 78.5,
+  "confidence": 0.59,
+  "caps_applied": [],
+  "dimensions": {
+    "D": 65.8,
+    "W": 73.2,
+    "A": 83.7,
+    "C": 67.7,
+    "S": 72.8,
+    "R": null
+  },
+  "metrics": {
+    "D1": {
+      "label": "Населення в зоні (зважене)",
+      "value": 4414.56,
+      "unit": "осіб",
+      "score": 65.8,
+      "quality": "B",
+      "source": "Meta HRSL ~30 м"
+    },
+    "D2": {
+      "label": "Цільовий сегмент (зважений)",
+      "value": 3904.48,
+      "unit": "осіб",
+      "score": 65.8,
+      "quality": "B",
+      "source": "Meta HRSL, демографічні шари"
+    },
+    "W1": {
+      "label": "Офіси та бізнес-послуги поруч",
+      "value": 24.46,
+      "unit": "зваж. к-сть",
+      "score": 73.2,
+      "quality": "C",
+      "source": "Overture Places"
+    },
+    "W2": {
+      "label": "Навчальні заклади поруч",
+      "value": 10.8,
+      "unit": "зваж. к-сть",
+      "score": 81.0,
+      "quality": "C",
+      "source": "Overture Places"
+    },
+    "W3": {
+      "label": "Готелі поруч",
+      "value": 3.31,
+      "unit": "зваж. к-сть",
+      "score": 81.2,
+      "quality": "C",
+      "source": "Overture Places"
+    },
+    "A1": {
+      "label": "Громадський транспорт",
+      "value": 6.43,
+      "unit": "індекс",
+      "score": 97.2,
+      "quality": "C",
+      "source": "Overture Places + лінії трамваю/метро"
+    },
+    "A2": {
+      "label": "Центральність вулиці",
+      "value": 131657.0,
+      "unit": "betweenness",
+      "score": 67.8,
+      "quality": "B",
+      "source": "мережа Overture Transportation"
+    },
+    "A3": {
+      "label": "Щільність торгівлі й послуг (~200 м)",
+      "value": 17.0,
+      "unit": "закладів",
+      "score": 86.1,
+      "quality": "B",
+      "source": "Overture Places"
+    },
+    "C1": {
+      "label": "Конкуренти в зоні (зважено)",
+      "value": 0.0,
+      "unit": "зваж. к-сть",
+      "score": 63.6,
+      "quality": "B",
+      "source": "Overture Places"
+    },
+    "C2": {
+      "label": "Насиченість: сегмент на 1 конкурента",
+      "value": 3904.48,
+      "unit": "осіб",
+      "score": 70.0,
+      "quality": "B",
+      "source": "похідна D2 / C1"
+    },
+    "C4": {
+      "label": "Очікувані клієнти за моделлю Хаффа",
+      "value": 11494.04,
+      "unit": "осіб",
+      "score": 68.5,
+      "quality": "B",
+      "source": "похідна, модель Хаффа"
+    },
+    "S1": {
+      "label": "Синергія з сусідніми закладами",
+      "value": 2.54,
+      "unit": "індекс",
+      "score": 72.8,
+      "quality": "B",
+      "source": "Overture Places"
+    }
+  },
+  "strengths": [
+    "S1",
+    "D2",
+    "A1"
+  ],
+  "weaknesses": [],
+  "better_nearby": []
+}

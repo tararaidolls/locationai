@@ -1,0 +1,16 @@
+id: beauty_salon
+label: Салон краси
+catchment: {walk_minutes: 15, tau_min: 7}
+segment: {women: 1.0, children_under_5: -0.5, elderly_60_plus: -0.3}
+competitors: [beauty]
+competition_curve: {type: monotonic}
+synergy: {fitness: 0.8, fashion: 0.6, cafe: 0.5, groceries: 0.4}
+weights: {D: 30, W: 10, A: 15, C: 25, S: 10, R: 10}
+metrics:
+  D: {D1: 1, D2: 3}
+  W: {W1: 1}
+  A: {A1: 1, A2: 1, A3: 1}
+  C: {C1: 1, C2: 2, C4: 3}
+  S: {S1: 1}
+caps:
+  - {dimension: D, below: 15, max: 45}

@@ -1,0 +1,150 @@
+{
+  "address": "≈ 9 Boulevard de la Croix-Rousse, 69004 Lyon 4e Arrondissement",
+  "address_exact": false,
+  "lat": 45.772006,
+  "lon": 4.817412,
+  "profile": "cafe",
+  "score": 57.6,
+  "grade": "C",
+  "city_percentile": 62.2,
+  "confidence": 0.54,
+  "caps_applied": [],
+  "dimensions": {
+    "D": 66.7,
+    "W": 57.6,
+    "A": 50.6,
+    "C": 59.1,
+    "S": 64.0,
+    "R": null
+  },
+  "metrics": {
+    "D1": {
+      "label": "Населення в зоні (зважене)",
+      "value": 2060.78,
+      "unit": "осіб",
+      "score": 66.5,
+      "quality": "B",
+      "source": "Meta HRSL ~30 м"
+    },
+    "D2": {
+      "label": "Цільовий сегмент (зважений)",
+      "value": 1742.54,
+      "unit": "осіб",
+      "score": 66.8,
+      "quality": "B",
+      "source": "Meta HRSL, демографічні шари"
+    },
+    "W1": {
+      "label": "Офіси та бізнес-послуги поруч",
+      "value": 4.31,
+      "unit": "зваж. к-сть",
+      "score": 56.0,
+      "quality": "C",
+      "source": "Overture Places"
+    },
+    "W2": {
+      "label": "Навчальні заклади поруч",
+      "value": 3.29,
+      "unit": "зваж. к-сть",
+      "score": 75.2,
+      "quality": "C",
+      "source": "Overture Places"
+    },
+    "W3": {
+      "label": "Готелі поруч",
+      "value": 0.21,
+      "unit": "зваж. к-сть",
+      "score": 43.0,
+      "quality": "C",
+      "source": "Overture Places"
+    },
+    "A1": {
+      "label": "Громадський транспорт",
+      "value": 0.0,
+      "unit": "індекс",
+      "score": 27.2,
+      "quality": "C",
+      "source": "Overture Places + лінії трамваю/метро"
+    },
+    "A2": {
+      "label": "Центральність вулиці",
+      "value": 664919.0,
+      "unit": "betweenness",
+      "score": 98.8,
+      "quality": "B",
+      "source": "мережа Overture Transportation"
+    },
+    "A3": {
+      "label": "Щільність торгівлі й послуг (~200 м)",
+      "value": 0.0,
+      "unit": "закладів",
+      "score": 14.1,
+      "quality": "B",
+      "source": "Overture Places"
+    },
+    "C1": {
+      "label": "Конкуренти в зоні (зважено)",
+      "value": 0.92,
+      "unit": "зваж. к-сть",
+      "score": 95.8,
+      "quality": "B",
+      "source": "Overture Places"
+    },
+    "C2": {
+      "label": "Насиченість: сегмент на 1 конкурента",
+      "value": 906.29,
+      "unit": "осіб",
+      "score": 63.5,
+      "quality": "B",
+      "source": "похідна D2 / C1"
+    },
+    "C4": {
+      "label": "Очікувані клієнти за моделлю Хаффа",
+      "value": 1310.0,
+      "unit": "осіб",
+      "score": 38.5,
+      "quality": "B",
+      "source": "похідна, модель Хаффа"
+    },
+    "S1": {
+      "label": "Синергія з сусідніми закладами",
+      "value": 10.51,
+      "unit": "індекс",
+      "score": 64.0,
+      "quality": "B",
+      "source": "Overture Places"
+    }
+  },
+  "strengths": [
+    "A2",
+    "D2",
+    "W2"
+  ],
+  "weaknesses": [
+    "A3",
+    "A1"
+  ],
+  "better_nearby": [
+    {
+      "address": "138 Boulevard de la Croix-Rousse",
+      "lat": 45.77390791559821,
+      "lon": 4.8295244048104164,
+      "score": 86.9,
+      "distance_m": 964
+    },
+    {
+      "address": "16 Rue Sergent Michel Berthet",
+      "lat": 45.773202178113294,
+      "lon": 4.805159024708976,
+      "score": 84.2,
+      "distance_m": 961
+    },
+    {
+      "address": "17 Rue Pierre Blanc",
+      "lat": 45.77100997892061,
+      "lon": 4.827791518767046,
+      "score": 80.1,
+      "distance_m": 814
+    }
+  ]
+}

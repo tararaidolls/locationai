@@ -1,0 +1,20 @@
+# Place groups, matched against tokens of the Overture taxonomy hierarchy
+# (e.g. "food_and_drink|restaurant|european_restaurant|italian_restaurant").
+# A place belongs to a group if any of its hierarchy tokens is listed.
+cafe: [cafe, coffee_shop, tea_room, bubble_tea_shop]
+restaurant: [restaurant, casual_eatery, fast_food_restaurant]
+bar: [bar]
+beauty: [beauty_salon, hair_salon, nail_salon, barber, hair_removal, day_spa]
+pet_store: [pet_store, animal_and_pet_store]
+pet_services: [pet_groomer, pet_care_service, pet_sitting, pet_training, pet_boarding]
+veterinary: [veterinarian, veterinary_care]
+parks: [park, dog_park]
+offices: [corporate_or_business_office, b2b_office_and_professional_service, professional_service, financial_service, government_office, attorney_or_law_firm, real_estate_service, coworking_space]
+education: [college_university, high_school, middle_school, school, specialty_school, language_school]
+lodging: [lodging]
+entertainment: [movie_theater, theatre_venue, arts_and_entertainment, cultural_and_historic]
+fitness: [gym, fitness_studio, sport_or_fitness_facility, yoga_studio, pilates_studio]
+fashion: [fashion_and_apparel_store]
+groceries: [grocery_store, organic_grocery_store, market, farmers_market, shopping_mall]
+transit: [metro_station, bus_station, train_station, public_transit_facility_or_service, rail_facility_or_service]
+retail_activity: [shopping, food_and_drink, lifestyle_services, personal_or_beauty_service]

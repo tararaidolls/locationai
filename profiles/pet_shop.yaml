@@ -1,0 +1,16 @@
+id: pet_shop
+label: Зоомагазин
+catchment: {walk_minutes: 15, tau_min: 6}
+segment: {pop: 1.0, youth_15_24: -0.5}
+competitors: [pet_store]
+competition_curve: {type: monotonic}
+synergy: {veterinary: 1.0, pet_services: 0.8, parks: 0.8, groceries: 0.4}
+weights: {D: 30, W: 5, A: 20, C: 20, S: 15, R: 10}
+metrics:
+  D: {D1: 1, D2: 2}
+  W: {W1: 1}
+  A: {A1: 1, A2: 1, A3: 1}
+  C: {C1: 1, C2: 1, C4: 2}
+  S: {S1: 1}
+caps:
+  - {dimension: D, below: 15, max: 45}

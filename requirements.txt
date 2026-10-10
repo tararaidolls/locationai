@@ -1,0 +1,10 @@
+numpy>=2.0
+pandas>=2.2
+pyarrow>=17
+shapely>=2.0
+scipy>=1.13
+python-igraph>=0.11
+h3>=4.0
+rasterio>=1.4
+pyyaml>=6.0
+pytest>=8.0

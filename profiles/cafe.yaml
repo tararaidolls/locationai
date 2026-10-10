@@ -1,0 +1,18 @@
+id: cafe
+label: Кав'ярня
+catchment: {walk_minutes: 10, tau_min: 4}
+# Target segment as a linear combination of HRSL layers.
+segment: {pop: 1.0, children_under_5: -1.0, elderly_60_plus: -0.5}
+competitors: [cafe]
+# Cafés benefit from clusters up to a point: optimum at the 75th percentile of competitor density.
+competition_curve: {type: optimum, p_star: 75, sigma: 30}
+synergy: {offices: 1.0, education: 0.8, entertainment: 0.6, lodging: 0.6, fitness: 0.4}
+weights: {D: 15, W: 25, A: 30, C: 10, S: 10, R: 10}
+metrics:
+  D: {D1: 1, D2: 2}
+  W: {W1: 2, W2: 1, W3: 1}
+  A: {A1: 1, A2: 2, A3: 2}
+  C: {C1: 1, C2: 1, C4: 2}
+  S: {S1: 1}
+caps:
+  - {dimension: A, below: 10, max: 50}
