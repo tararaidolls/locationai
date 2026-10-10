@@ -33,6 +33,9 @@ class City:
     bbox: tuple[float, float, float, float]  # xmin, ymin, xmax, ymax (lon/lat)
     default_locality: str  # preferred commune when a street name exists in several
     buffer_deg: float = 0.025  # data is fetched this far beyond bbox to avoid edge effects (~2–3 km)
+    # Census populations per commune (Overture division names). When set, HRSL is rescaled to these
+    # totals and partly redistributed by residential floor area (see population.calibrate_to_census).
+    population_targets: dict[str, int] | None = None
 
     @property
     def data_bbox(self) -> tuple[float, float, float, float]:
@@ -45,6 +48,10 @@ class City:
 
 CITIES = {
     "lyon": City("lyon", "Lyon + Villeurbanne", "FR", (4.77, 45.70, 4.92, 45.81), "Lyon"),
+    # Cluj-Napoca with Florești (the large commuter town to the west).
+    "cluj": City("cluj", "Cluj-Napoca + Florești", "RO", (23.47, 46.72, 23.70, 46.81), "Cluj-Napoca",
+                 # INS, Recensământul populației 2021. Florești figure to be double-checked against INS.
+                 population_targets={"Cluj-Napoca": 286_598, "Florești": 52_735}),
 }
 
 
@@ -52,3 +59,8 @@ def city_dir(city: City) -> Path:
     d = DATA_DIR / city.key
     d.mkdir(parents=True, exist_ok=True)
     return d
+
+
+def built_cities() -> list[str]:
+    """Cities whose data has been prepared with `build-city`."""
+    return [k for k, c in CITIES.items() if (DATA_DIR / c.key / "addresses.parquet").exists()]

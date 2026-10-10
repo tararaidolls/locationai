@@ -1,0 +1,127 @@
+{
+  "address": "≈ Strada Eroilor 25, Florești",
+  "address_exact": false,
+  "lat": 46.736557675,
+  "lon": 23.48418522,
+  "profile": "pet_shop",
+  "score": 81.4,
+  "grade": "A",
+  "city_percentile": 91.0,
+  "confidence": 0.59,
+  "caps_applied": [],
+  "dimensions": {
+    "D": 87.9,
+    "W": 83.2,
+    "A": 91.0,
+    "C": 50.4,
+    "S": 96.2,
+    "R": null
+  },
+  "metrics": {
+    "D1": {
+      "label": "Населення в зоні (зважене)",
+      "value": 3314.03,
+      "unit": "осіб",
+      "score": 86.2,
+      "quality": "B",
+      "source": "Meta HRSL ~30 м"
+    },
+    "D2": {
+      "label": "Цільовий сегмент (зважений)",
+      "value": 3138.9,
+      "unit": "осіб",
+      "score": 88.8,
+      "quality": "B",
+      "source": "Meta HRSL, демографічні шари"
+    },
+    "W1": {
+      "label": "Офіси та бізнес-послуги поруч",
+      "value": 18.7,
+      "unit": "зваж. к-сть",
+      "score": 83.2,
+      "quality": "C",
+      "source": "Overture Places"
+    },
+    "W2": {
+      "label": "Навчальні заклади поруч",
+      "value": 1.58,
+      "unit": "зваж. к-сть",
+      "score": 45.5,
+      "quality": "C",
+      "source": "Overture Places"
+    },
+    "W3": {
+      "label": "Готелі поруч",
+      "value": 0.81,
+      "unit": "зваж. к-сть",
+      "score": 34.8,
+      "quality": "C",
+      "source": "Overture Places"
+    },
+    "A1": {
+      "label": "Громадський транспорт",
+      "value": 0.78,
+      "unit": "індекс",
+      "score": 84.0,
+      "quality": "C",
+      "source": "Overture Places + лінії трамваю/метро"
+    },
+    "A2": {
+      "label": "Центральність вулиці",
+      "value": 80165.0,
+      "unit": "betweenness",
+      "score": 91.2,
+      "quality": "B",
+      "source": "мережа Overture Transportation"
+    },
+    "A3": {
+      "label": "Щільність торгівлі й послуг (~200 м)",
+      "value": 37.0,
+      "unit": "закладів",
+      "score": 97.6,
+      "quality": "B",
+      "source": "Overture Places"
+    },
+    "C1": {
+      "label": "Конкуренти в зоні (зважено)",
+      "value": 0.6,
+      "unit": "зваж. к-сть",
+      "score": 10.0,
+      "quality": "B",
+      "source": "Overture Places"
+    },
+    "C2": {
+      "label": "Насиченість: сегмент на 1 конкурента",
+      "value": 1966.2,
+      "unit": "осіб",
+      "score": 73.5,
+      "quality": "B",
+      "source": "похідна D2 / C1"
+    },
+    "C4": {
+      "label": "Очікувані клієнти за моделлю Хаффа",
+      "value": 4228.31,
+      "unit": "осіб",
+      "score": 59.0,
+      "quality": "B",
+      "source": "похідна, модель Хаффа"
+    },
+    "S1": {
+      "label": "Синергія з сусідніми закладами",
+      "value": 5.91,
+      "unit": "індекс",
+      "score": 96.2,
+      "quality": "B",
+      "source": "Overture Places"
+    }
+  },
+  "strengths": [
+    "D2",
+    "S1",
+    "D1"
+  ],
+  "weaknesses": [
+    "C1"
+  ],
+  "better_nearby": []
+}

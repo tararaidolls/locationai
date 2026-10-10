@@ -1,7 +1,8 @@
-"""Offline geocoder over the city's address table (Overture addresses = BAN for France).
+"""Offline geocoder over the city's address table (Overture/BAN for France, place addresses for Romania).
 
-Accepts "lat, lon" or "<number> <street>[, anything]". Production should add an online
-geocoder per country (BAN, CartoCiudad, PRG, Nominatim) with this as a fallback.
+Accepts "lat, lon", "<number> <street>[, hint]" (French order) or "<street> [nr.] <number>[, hint]"
+(Romanian order). Street types may be omitted or abbreviated ("Memorandumului 28", "Str. Horea 3").
+Production should add an online geocoder per country (BAN, Nominatim, …) with this as a fallback.
 """
 import difflib
 import re
@@ -13,6 +14,12 @@ import pandas as pd
 
 _LATLON = re.compile(r"^\s*(-?\d+(?:\.\d+)?)\s*[,; ]\s*(-?\d+(?:\.\d+)?)\s*$")
 _ADDR = re.compile(r"^\s*(\d+)\s*(?:(?:bis|ter|[a-z])\b)?\s*,?\s*([^,]+?)\s*(?:,(.*))?$", re.IGNORECASE)
+_ADDR_STREET_FIRST = re.compile(
+    r"^\s*([^,]*?[^\W\d_][^,]*?)\s*,?\s*(?:nr\.?\s*)?(\d{1,4}[a-z]?)\s*(?:,(.*))?$", re.IGNORECASE)
+# Street-type words dropped for a second, looser match ("rue Paul Bert" ~ "Paul Bert", "Str. Horea" ~ "Horea").
+_TYPE_WORDS = re.compile(
+    r"^(rue|avenue|av|boulevard|bd|bld|place|pl|cours|quai|chemin|allee|impasse|route|"
+    r"strada|str|bulevardul|b dul|bdul|calea|piata|aleea|al|splaiul|soseaua|sos|intrarea)\b\s*")
 _POSTCODE = re.compile(r"\b(\d{5})\b")
 
 
@@ -28,6 +35,28 @@ def _norm(s: str) -> str:
     s = unicodedata.normalize("NFKD", s).encode("ascii", "ignore").decode().lower()
     s = re.sub(r"[^a-z0-9 ]", " ", s)
     return re.sub(r"\s+", " ", s).strip()
+
+
+def _key(street_norm: str) -> str:
+    return _TYPE_WORDS.sub("", street_norm).strip()
+
+
+def _label(r) -> str:
+    label = getattr(r, "label", None)
+    if isinstance(label, str) and label:
+        return label
+    return f"{r.number} {r.street}, {r.postcode} {r.locality}"
+
+
+def _parse(query: str):
+    """(number, street, hint) from either address order; None if not an address."""
+    m = _ADDR.match(query)
+    if m:
+        return m.group(1), m.group(2), m.group(3) or ""
+    m = _ADDR_STREET_FIRST.match(query)
+    if m:
+        return m.group(2).lower(), m.group(1), m.group(3) or ""
+    return None
 
 
 def _pick_locality(rows: pd.DataFrame, hint: str, default_locality: str) -> pd.DataFrame:
@@ -51,33 +80,43 @@ def geocode(query: str, addresses: pd.DataFrame, default_locality: str = "") -> 
         lat, lon = float(m.group(1)), float(m.group(2))
         return GeocodeResult(lat, lon, f"{lat:.5f}, {lon:.5f}", True)
 
-    m = _ADDR.match(query)
-    if not m:
-        raise ValueError("Вкажіть адресу як «10 rue de la République» або координати «45.7640, 4.8357».")
-    number, street, hint = m.group(1), _norm(m.group(2)), m.group(3) or ""
+    parsed = _parse(query)
+    if not parsed:
+        raise ValueError("Вкажіть адресу як «10 rue de la République», «Strada Memorandumului 28» "
+                         "або координати «45.7640, 4.8357».")
+    number, street_raw, hint = parsed
+    street = _norm(street_raw)
 
-    streets = addresses["street"].dropna().unique()
-    norm_map: dict[str, list[str]] = {}
-    for s in streets:
-        norm_map.setdefault(_norm(s), []).append(s)
-    match = difflib.get_close_matches(street, norm_map.keys(), n=1, cutoff=0.85)
-    if not match:
-        raise ValueError(f"Вулицю «{m.group(2)}» не знайдено в адресному реєстрі міста.")
-    rows = _pick_locality(addresses[addresses["street"].isin(norm_map[match[0]])], hint, default_locality)
+    full: dict[str, list[str]] = {}
+    loose: dict[str, list[str]] = {}
+    for s_ in addresses["street"].dropna().unique():
+        n = _norm(s_)
+        full.setdefault(n, []).append(s_)
+        loose.setdefault(_key(n), []).append(s_)
+    match = difflib.get_close_matches(street, full.keys(), n=1, cutoff=0.85)
+    if match:
+        names, same_street = full[match[0]], _key(match[0]) == _key(street)
+    else:
+        match = difflib.get_close_matches(_key(street), loose.keys(), n=1, cutoff=0.85)
+        if not match:
+            raise ValueError(f"Вулицю «{street_raw}» не знайдено в адресному реєстрі міста.")
+        names, same_street = loose[match[0]], match[0] == _key(street)
+    rows = _pick_locality(addresses[addresses["street"].isin(names)], hint, default_locality)
 
-    same_street = match[0] == street
     exact = rows[rows["number"].astype(str).str.lower() == number]
     if len(exact):
         r = exact.iloc[0]
         prefix = "" if same_street else "≈ "
-        return GeocodeResult(r.lat, r.lon, f"{prefix}{r.number} {r.street}, {r.postcode} {r.locality}", same_street)
+        return GeocodeResult(float(r.lat), float(r.lon), prefix + _label(r), same_street)
     # Nearest house number on the same street.
     nums = pd.to_numeric(rows["number"].str.extract(r"(\d+)")[0], errors="coerce")
-    r = rows.iloc[int(np.nanargmin(np.abs(nums.to_numpy() - int(number))))]
-    return GeocodeResult(r.lat, r.lon, f"≈ {r.number} {r.street}, {r.postcode} {r.locality}", False)
+    r = rows.iloc[int(np.nanargmin(np.abs(nums.to_numpy() - int(re.match(r"\d+", number).group()))))]
+    return GeocodeResult(float(r.lat), float(r.lon), "≈ " + _label(r), False)
 
 
 def reverse(lat: float, lon: float, addresses: pd.DataFrame) -> str:
     d = (addresses["lat"] - lat) ** 2 + ((addresses["lon"] - lon) * np.cos(np.radians(lat))) ** 2
     r = addresses.loc[d.idxmin()]
+    if isinstance(r.get("label"), str):
+        return r["label"].split(",")[0]
     return f"{r.number} {r.street}"

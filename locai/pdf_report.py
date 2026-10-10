@@ -197,9 +197,32 @@ def _verdict(r: ScoreResult, profile: Profile) -> str:
     best = max(dims, key=dims.get)
     worst = min(dims, key=dims.get)
     return (f"Локація набирає {r.total:.0f} балів зі 100 для профілю «{profile.label.lower()}» і входить до "
-            f"{100 - r.city_percentile:.0f}% найкращих комерційних локацій міста. Найсильніший вимір — "
+            f"{max(100 - r.city_percentile, 1):.0f}% найкращих комерційних локацій міста. Найсильніший вимір — "
             f"«{DIMENSIONS[best].lower()}» ({dims[best]:.0f}), найслабший — «{DIMENSIONS[worst].lower()}» "
             f"({dims[worst]:.0f}).")
+
+
+def data_sources(city: CityData) -> list[str]:
+    c = city.city
+    if c.country == "FR":
+        overture = "Overture Maps Foundation (заклади, вулична мережа, адреси; містить дані OpenStreetMap і BAN/Etalab 2.0)."
+    else:
+        overture = ("Overture Maps Foundation (заклади, вулична мережа, межі громад; містить дані OpenStreetMap). "
+                    "Адреси зібрано з адрес закладів, тож частина номерів будинків наближена.")
+    out = [overture, "Meta Data for Good — High Resolution Settlement Layer (населення та демографія, CC BY 4.0)."]
+    if c.population_targets:
+        out.append("Чисельність населення приведено до перепису 2021 (" + ", ".join(c.population_targets) +
+                   ") і частково розподілено за площею житлових будинків Overture.")
+    return out
+
+
+def limitations(city: CityData) -> list[str]:
+    out = ["Ризики й стабільність (рівень закриттів бізнесів), доходи мешканців, вартість оренди, рейтинги "
+           "конкурентів, точний розклад громадського транспорту."]
+    if city.city.country != "FR":
+        out.append("Перелік закладів для цієї країни може бути неповним: конкурентів поруч може бути більше, "
+                   "ніж показано, тож оцінку конкуренції варто перевірити на місці.")
+    return out
 
 
 def build_context(city: CityData, scorer: Scorer, geo: GeocodeResult, r: ScoreResult, nearby: list[dict]) -> dict:
@@ -272,6 +295,8 @@ def build_context(city: CityData, scorer: Scorer, geo: GeocodeResult, r: ScoreRe
         "map_svg": build_map_svg(city, scorer, x, y, nearby, comp_all, syn_idx, node_dist),
         "time_bands": [{"label": f"до {lim} хв", "color": c} for lim, c in TIME_BANDS if lim <= walk],
         "colors": {"competitor": COMPETITOR, "synergy": SYNERGY, "outside": STREET_OUTSIDE},
+        "data_sources": data_sources(city),
+        "limitations": limitations(city),
         "synergy_groups": ", ".join(GROUP_LABELS.get(g, g.replace("_", " ")) for g in profile.synergy),
     }
 

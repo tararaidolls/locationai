@@ -20,10 +20,14 @@ from locai.report import GRADE_TEXT  # noqa: E402
 from locai.service import LocationService  # noqa: E402
 
 ADDRESSES = [
-    "12 rue Paul Bert",
-    "20 boulevard de la Croix-Rousse",
-    "300 avenue Jean Jaurès",
-    "25 cours Émile Zola, Villeurbanne",
+    ("lyon", "12 rue Paul Bert"),
+    ("lyon", "20 boulevard de la Croix-Rousse"),
+    ("lyon", "300 avenue Jean Jaurès"),
+    ("lyon", "25 cours Émile Zola, Villeurbanne"),
+    ("cluj", "Strada Memorandumului 28"),
+    ("cluj", "Strada Aurel Vlaicu 3"),
+    ("cluj", "Calea Mănăștur 70"),
+    ("cluj", "Strada Eroilor 25, Florești"),
 ]
 
 
@@ -64,10 +68,10 @@ def scope_css(css: str, scope: str = ".rep") -> str:
 def main(out_dir: Path) -> None:
     svc = LocationService()
     examples, css = [], None
-    for q in ADDRESSES:
-        geo = svc.geocode("lyon", q)
+    for city_key, q in ADDRESSES:
+        geo = svc.geocode(city_key, q)
         for pid in list_profiles():
-            s = svc.score("lyon", pid, geo)
+            s = svc.score(city_key, pid, geo)
             walk = s.scorer.profile.walk_minutes
             t_places, t_cells = s.scorer.engine.times(s.x, s.y, walk)
             html = svc.report_html(s)
@@ -77,6 +81,8 @@ def main(out_dir: Path) -> None:
             rng = np.random.default_rng(abs(hash((q, pid))) % 2**32)
             examples.append({
                 "id": len(examples),
+                "city": city_key,
+                "city_name": s.city.city.name,
                 "query": q,
                 "address": geo.label,
                 "profile": pid,
@@ -96,7 +102,10 @@ def main(out_dir: Path) -> None:
     for e in examples:
         (out_dir / "reports" / f"{e['id']}.html").write_text(e.pop("report"), encoding="utf-8")
     profiles = [{"id": p, "label": next(e["profile_label"] for e in examples if e["profile"] == p)} for p in list_profiles()]
-    (out_dir / "examples.json").write_text(json.dumps({"profiles": profiles, "examples": examples}, ensure_ascii=False))
+    cities = list(dict.fromkeys((e["city"], e["city_name"]) for e in examples))
+    (out_dir / "examples.json").write_text(json.dumps(
+        {"profiles": profiles, "cities": [{"key": k, "name": n} for k, n in cities], "examples": examples},
+        ensure_ascii=False))
     (out_dir / "report.css").write_text(css)
 
 

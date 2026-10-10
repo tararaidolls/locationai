@@ -101,3 +101,59 @@ def test_metric_sentences_read_naturally():
     assert "Один із найслабших" in _metric_sentence("C4", 63.5, 0.0, False)
     # Abstract units are not shown to the reader.
     assert "індекс" not in _metric_sentence("S1", 83.0, 97.0, True)
+
+
+@pytest.mark.parametrize("text, expected", [
+    ("Strada Memorandumului 28", ("Strada Memorandumului", "28")),
+    ("Str. Memorandumului nr.28", ("Strada Memorandumului", "28")),
+    ("Str.Horea 3", ("Strada Horea", "3")),
+    ("Strada Principala, nr. 323T", ("Strada Principala", "323t")),
+    ("Cluj-Napoca, str. Horea 3", ("Strada Horea", "3")),
+    ("B-dul 21 Decembrie 1989 nr. 77", ("Bulevardul 21 Decembrie 1989", "77")),
+    ("Strada 1 Mai 4", ("Strada 1 Mai", "4")),
+    ("Strada Teodor Mihali 58-60", ("Strada Teodor Mihali", "58")),
+    ("Loc. Rădaia nr. 48", ("Rădaia", "48")),
+    ("Bulevardul 21 Decembrie 1989", None),  # a year, not a house number
+    ("E81", None),
+    ("Str. Avram Iancu", None),
+    (None, None),
+])
+def test_parse_romanian_addresses(text, expected):
+    from locai.addresses import parse_ro_freeform
+
+    assert parse_ro_freeform(text) == expected
+
+
+def test_geocode_street_first_order_and_loose_street_type():
+    addr = pd.DataFrame({
+        "street": ["Strada Memorandumului", "Strada Horea"], "number": ["28", "3"],
+        "postcode": ["400114", None], "locality": ["Cluj-Napoca", "Cluj-Napoca"],
+        "lon": [23.5857, 23.5873], "lat": [46.7692, 46.7831],
+        "label": ["Strada Memorandumului 28, Cluj-Napoca", "Strada Horea 3, Cluj-Napoca"],
+    })
+    r = geocode("Memorandumului 28", addr, "Cluj-Napoca")
+    assert r.exact and r.label == "Strada Memorandumului 28, Cluj-Napoca"
+    assert geocode("Str. Horea nr. 3", addr, "Cluj-Napoca").exact
+
+
+def test_census_calibration_moves_people_to_new_housing():
+    import h3
+    import shapely
+
+    from locai.config import H3_RES
+    from locai.sources.population import calibrate_to_census
+
+    old = h3.latlng_to_cell(46.75, 23.49, H3_RES)
+    new = h3.latlng_to_cell(46.745, 23.50, H3_RES)  # a new estate HRSL has never seen
+    cells = pd.DataFrame({"h3": [old], "pop": [1000.0], "women": [520.0], "youth_15_24": [100.0],
+                          "elderly_60_plus": [150.0], "children_under_5": [60.0]})
+    buildings = pd.DataFrame({"lon": [23.49, 23.50], "lat": [46.75, 46.745], "area_m2": [500.0, 1500.0],
+                              "floors": [np.nan, 4.0]})
+    commune = ("Florești", shapely.box(23.45, 46.72, 23.53, 46.77))
+    out, notes = calibrate_to_census(cells, buildings, [commune], {"Florești": 3000})
+    pop = out.set_index("h3")["pop"]
+    assert pop.sum() == pytest.approx(3000)
+    assert pop[new] > 0  # people placed in the new estate
+    # Demographic mix is kept: women stay 52% of the old cell's residents.
+    assert out.set_index("h3").loc[old, "women"] / pop[old] == pytest.approx(0.52)
+    assert notes and "Florești" in notes[0]

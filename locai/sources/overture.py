@@ -3,6 +3,7 @@
 Uses row-group bbox statistics for pushdown, so only the needed slices of the global
 GeoParquet files are downloaded.
 """
+import numpy as np
 import pandas as pd
 import pyarrow.compute as pc
 import pyarrow.dataset as ds
@@ -27,7 +28,7 @@ def _bbox_filter(bbox):
 
 
 def fetch_places(bbox) -> pd.DataFrame:
-    cols = ["id", "names", "taxonomy", "basic_category", "operating_status", "confidence", "geometry"]
+    cols = ["id", "names", "taxonomy", "basic_category", "operating_status", "confidence", "addresses", "geometry"]
     df = _dataset("places", "place").to_table(columns=cols, filter=_bbox_filter(bbox)).to_pandas()
     pts = shapely.from_wkb(df["geometry"].values)
     return pd.DataFrame({
@@ -38,6 +39,7 @@ def fetch_places(bbox) -> pd.DataFrame:
         "basic_category": df["basic_category"],
         "status": df["operating_status"].fillna("open"),
         "confidence": df["confidence"],
+        "address": [dict(a[0]) if a is not None and len(a) else None for a in df["addresses"]],
         "lon": shapely.get_x(pts),
         "lat": shapely.get_y(pts),
     })
@@ -62,3 +64,31 @@ def fetch_addresses(bbox) -> pd.DataFrame:
         "lon": shapely.get_x(pts),
         "lat": shapely.get_y(pts),
     })
+
+
+# Building subtypes that are not homes; NULL subtype is kept (most buildings are unlabelled).
+NON_RESIDENTIAL = {"industrial", "commercial", "education", "religious", "outbuilding", "medical", "civic",
+                   "agricultural", "service", "transportation", "military", "entertainment"}
+
+
+def fetch_buildings(bbox, proj) -> pd.DataFrame:
+    """Probable residential buildings: centroid, footprint area (m²) and floors when known."""
+    cols = ["subtype", "height", "num_floors", "geometry"]
+    df = _dataset("buildings", "building").to_table(columns=cols, filter=_bbox_filter(bbox)).to_pandas()
+    df = df[~df["subtype"].isin(NON_RESIDENTIAL)]
+    geoms = shapely.from_wkb(df["geometry"].values)
+    cent = shapely.centroid(geoms)
+    lon, lat = shapely.get_x(cent), shapely.get_y(cent)
+    # Area in m² in the local projection (shoelace on projected rings is exact enough at city scale).
+    projected = shapely.transform(geoms, lambda c: np.column_stack(proj.to_xy(c[:, 0], c[:, 1])))
+    floors = df["num_floors"].astype(float).to_numpy()
+    floors = np.where(np.isnan(floors), df["height"].astype(float).to_numpy() / 3.0, floors)
+    return pd.DataFrame({"lon": lon, "lat": lat, "area_m2": shapely.area(projected), "floors": floors})
+
+
+def fetch_communes(bbox) -> list[tuple[str, object]]:
+    """Municipality / commune polygons (Overture division_area, admin level 2)."""
+    cols = ["names", "subtype", "class", "geometry"]
+    df = _dataset("divisions", "division_area").to_table(columns=cols, filter=_bbox_filter(bbox)).to_pandas()
+    df = df[(df["subtype"] == "county") & (df["class"] == "land")]
+    return [(n["primary"], g) for n, g in zip(df["names"], shapely.from_wkb(df["geometry"].values))]

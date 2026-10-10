@@ -5,7 +5,7 @@
   betweenness.npy    edge betweenness (street centrality)
   cells.parquet      H3 cells with HRSL population layers (+ snap to the walk network)
   transit_rail.npy   tram/subway lines densified into points every RAIL_STEP_M
-  addresses.parquet  Overture/BAN addresses for offline geocoding
+  addresses.parquet  addresses for offline geocoding (Overture/BAN; for Romania built from places)
 """
 import logging
 import time
@@ -17,6 +17,7 @@ import pandas as pd
 import shapely
 from scipy.spatial import cKDTree
 
+from .addresses import addresses_from_places
 from .config import City, city_dir
 from .geo import LocalProjection
 from .network import WalkNetwork, build_walk_network
@@ -57,6 +58,8 @@ def build_city(city: City) -> None:
     d = city_dir(city)
     proj = LocalProjection((city.bbox[1] + city.bbox[3]) / 2)
     t = time.time()
+    for stale in d.glob("reference_*.parquet"):  # scoring baselines depend on the data being rebuilt
+        stale.unlink()
 
     log.info("Fetching Overture road segments…")
     segments = overture.fetch_segments(city.data_bbox)
@@ -81,16 +84,29 @@ def build_city(city: City) -> None:
 
     log.info("Fetching Overture places…")
     places = overture.fetch_places(city.data_bbox)
-    _attach_xy_and_node(places, proj, net).to_parquet(d / "places.parquet")
+    places_out = _attach_xy_and_node(places, proj, net)
+    places_out.drop(columns=["address"]).to_parquet(d / "places.parquet")
 
     log.info("Fetching HRSL population…")
     pop = population.population_by_h3(city.data_bbox).reset_index()
+    if city.population_targets:
+        log.info("Calibrating population to census totals using residential buildings…")
+        pop, notes = population.calibrate_to_census(
+            pop, overture.fetch_buildings(city.data_bbox, proj), overture.fetch_communes(city.data_bbox),
+            city.population_targets)
+        for n in notes:
+            log.info("  %s", n)
     latlng = np.array([h3.cell_to_latlng(c) for c in pop["h3"]])
     pop["lat"], pop["lon"] = latlng[:, 0], latlng[:, 1]
     _attach_xy_and_node(pop, proj, net).to_parquet(d / "cells.parquet")
 
     log.info("Fetching addresses for the offline geocoder…")
-    overture.fetch_addresses(city.data_bbox).to_parquet(d / "addresses.parquet")
+    addresses = overture.fetch_addresses(city.data_bbox)
+    if addresses.empty:
+        # No open address register in Overture for this country: use business addresses instead.
+        addresses = addresses_from_places(places, city.default_locality)
+        log.info("No Overture addresses; built %d addresses from places", len(addresses))
+    addresses.to_parquet(d / "addresses.parquet")
     log.info("City %s built in %.0fs → %s", city.key, time.time() - t, d)
 
 

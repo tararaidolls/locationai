@@ -90,13 +90,21 @@ class LocationService:
                 x0, y0, x1, y1 = city.city.bbox
                 a = city.addresses.dropna(subset=["street", "number"])
                 a = a[a["lon"].between(x0, x1) & a["lat"].between(y0, y1)]
-                labels = (a["number"].astype(str) + " " + a["street"] + ", " + a["postcode"].fillna("") + " "
-                          + a["locality"].fillna("")).tolist()
+                if "label" in a and a["label"].notna().all():
+                    labels = a["label"].tolist()
+                else:
+                    labels = (a["number"].astype(str) + " " + a["street"] + ", " + a["postcode"].fillna("") + " "
+                              + a["locality"].fillna("")).tolist()
                 self._suggest_index[city_key] = (labels, [_norm(lbl) for lbl in labels])
             labels, normed = self._suggest_index[city_key]
         hits = [i for i, n in enumerate(normed) if all(t in n for t in tokens)]
         home = _norm(city.city.default_locality)
-        first = tokens[0] + " "
+        numbers = [t for t in tokens if t[:1].isdigit()]
+
+        def exact_number(i: int) -> bool:  # the typed house number appears as a whole token
+            words = normed[i].split()
+            return all(n in words for n in numbers)
+
         # Exact house number first, then the main city, then shorter labels.
-        hits.sort(key=lambda i: (not normed[i].startswith(first), home not in normed[i], len(labels[i]), labels[i]))
+        hits.sort(key=lambda i: (not exact_number(i), home not in normed[i], len(labels[i]), labels[i]))
         return [labels[i] for i in hits[:limit]]

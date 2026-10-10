@@ -29,7 +29,7 @@ from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Redirect
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from ..config import CITIES, DATA_DIR
+from ..config import CITIES, DATA_DIR, built_cities
 from ..metrics import DIMENSIONS
 from ..profiles import list_profiles, load_profile
 from ..report import GRADE_TEXT
@@ -51,7 +51,7 @@ class Settings:
     base_url: str | None = os.environ.get("LOCAI_BASE_URL")
     stripe_secret_key: str | None = os.environ.get("STRIPE_SECRET_KEY")
     stripe_webhook_secret: str | None = os.environ.get("STRIPE_WEBHOOK_SECRET")
-    enabled_cities: list[str] = field(default_factory=lambda: sorted(CITIES))
+    enabled_cities: list[str] = field(default_factory=lambda: built_cities())
     free_reports: int = int(os.environ.get("LOCAI_FREE_REPORTS", "20"))
 
 

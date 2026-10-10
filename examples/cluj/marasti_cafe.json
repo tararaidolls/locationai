@@ -1,0 +1,125 @@
+{
+  "address": "Strada Aurel Vlaicu 3, Cluj-Napoca",
+  "address_exact": true,
+  "lat": 46.77902,
+  "lon": 23.616877,
+  "profile": "cafe",
+  "score": 92.8,
+  "grade": "A",
+  "city_percentile": 99.5,
+  "confidence": 0.54,
+  "caps_applied": [],
+  "dimensions": {
+    "D": 99.2,
+    "W": 93.1,
+    "A": 93.1,
+    "C": 79.4,
+    "S": 94.8,
+    "R": null
+  },
+  "metrics": {
+    "D1": {
+      "label": "Населення в зоні (зважене)",
+      "value": 3399.22,
+      "unit": "осіб",
+      "score": 99.2,
+      "quality": "B",
+      "source": "Meta HRSL ~30 м"
+    },
+    "D2": {
+      "label": "Цільовий сегмент (зважений)",
+      "value": 2950.83,
+      "unit": "осіб",
+      "score": 99.2,
+      "quality": "B",
+      "source": "Meta HRSL, демографічні шари"
+    },
+    "W1": {
+      "label": "Офіси та бізнес-послуги поруч",
+      "value": 12.43,
+      "unit": "зваж. к-сть",
+      "score": 92.2,
+      "quality": "C",
+      "source": "Overture Places"
+    },
+    "W2": {
+      "label": "Навчальні заклади поруч",
+      "value": 7.2,
+      "unit": "зваж. к-сть",
+      "score": 96.5,
+      "quality": "C",
+      "source": "Overture Places"
+    },
+    "W3": {
+      "label": "Готелі поруч",
+      "value": 2.95,
+      "unit": "зваж. к-сть",
+      "score": 91.5,
+      "quality": "C",
+      "source": "Overture Places"
+    },
+    "A1": {
+      "label": "Громадський транспорт",
+      "value": 0.57,
+      "unit": "індекс",
+      "score": 83.0,
+      "quality": "C",
+      "source": "Overture Places + лінії трамваю/метро"
+    },
+    "A2": {
+      "label": "Центральність вулиці",
+      "value": 106791.0,
+      "unit": "betweenness",
+      "score": 96.0,
+      "quality": "B",
+      "source": "мережа Overture Transportation"
+    },
+    "A3": {
+      "label": "Щільність торгівлі й послуг (~200 м)",
+      "value": 23.0,
+      "unit": "закладів",
+      "score": 95.2,
+      "quality": "B",
+      "source": "Overture Places"
+    },
+    "C1": {
+      "label": "Конкуренти в зоні (зважено)",
+      "value": 1.03,
+      "unit": "зваж. к-сть",
+      "score": 95.4,
+      "quality": "B",
+      "source": "Overture Places"
+    },
+    "C2": {
+      "label": "Насиченість: сегмент на 1 конкурента",
+      "value": 1455.03,
+      "unit": "осіб",
+      "score": 96.8,
+      "quality": "B",
+      "source": "похідна D2 / C1"
+    },
+    "C4": {
+      "label": "Очікувані клієнти за моделлю Хаффа",
+      "value": 1246.89,
+      "unit": "осіб",
+      "score": 62.8,
+      "quality": "B",
+      "source": "похідна, модель Хаффа"
+    },
+    "S1": {
+      "label": "Синергія з сусідніми закладами",
+      "value": 26.57,
+      "unit": "індекс",
+      "score": 94.8,
+      "quality": "B",
+      "source": "Overture Places"
+    }
+  },
+  "strengths": [
+    "A2",
+    "A3",
+    "W1"
+  ],
+  "weaknesses": [],
+  "better_nearby": []
+}
