@@ -3,6 +3,7 @@
   python -m locai build-city lyon
   python -m locai score "10 rue de la République" --profile cafe [--city lyon] [--json out.json] [--pdf out.pdf]
   python -m locai serve [--port 8000]
+  python -m locai beta-stats [--csv out/]
 """
 import argparse
 import json
@@ -32,12 +33,24 @@ def main(argv=None) -> int:
     w = sub.add_parser("serve", help="запустити сайт")
     w.add_argument("--host", default="127.0.0.1")
     w.add_argument("--port", type=int, default=8000)
+    st = sub.add_parser("beta-stats", help="статистика бета-тесту: звіти, відгуки, лист очікування")
+    st.add_argument("--csv", help="також вивантажити дані в CSV у цю папку")
     ap.add_argument("-v", "--verbose", action="store_true")
     args = ap.parse_args(argv)
     logging.basicConfig(level=logging.INFO if args.verbose else logging.WARNING, format="%(asctime)s %(message)s")
 
     if args.cmd == "build-city":
         build_city(CITIES[args.city])
+        return 0
+
+    if args.cmd == "beta-stats":
+        from pathlib import Path
+
+        from .web.app import Settings
+        from .web.stats import beta_stats
+
+        cfg = Settings()
+        print(beta_stats(cfg.db_path, cfg.free_reports, Path(args.csv) if args.csv else None))
         return 0
 
     if args.cmd == "serve":

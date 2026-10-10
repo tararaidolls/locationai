@@ -123,6 +123,18 @@
     .toolbar .pdf { background: var(--accent); color: #fff; padding: 10px 16px; border-radius: 10px; }
     .page + .page { margin-top: 14mm; padding-top: 8mm; border-top: 1px solid var(--rule); }
   }
+  .fb { display: none; }
+  @media screen {
+    .fb { display: block; max-width: 182mm; margin: 10mm auto 0; padding: 6mm; border: 1px solid var(--rule); border-radius: 4mm; }
+    .fb h2 { margin-bottom: 1mm; }
+    .fb fieldset { border: 0; padding: 0; margin: 4mm 0 0; }
+    .fb legend { font-weight: 600; margin-bottom: 2mm; }
+    .fb .opts { display: flex; flex-wrap: wrap; gap: 2mm 5mm; }
+    .fb .opts label { display: inline-flex; align-items: center; gap: 1.5mm; }
+    .fb textarea { width: 100%; min-height: 22mm; font: inherit; padding: 2.5mm; border: 1px solid var(--rule); border-radius: 2mm; }
+    .fb button { margin-top: 4mm; font: inherit; font-weight: 650; border: 0; border-radius: 10px; padding: 10px 18px;
+                 background: var(--accent); color: #fff; cursor: pointer; }
+  }
   @media screen and (max-width: 640px) {
     .hero, .cols { grid-template-columns: 1fr; }
     .tiles { grid-template-columns: 1fr 1fr; }
@@ -285,5 +297,33 @@
   <div class="disclaimer">Звіт є аналітичною оцінкою на основі відкритих даних і не гарантує комерційного успіху. Перед підписанням оренди перевірте локацію особисто: потік людей у різний час доби, стан приміщення, умови оренди та дозволи.</div>
 </section>
 
+{% if feedback_url %}
+<form class="fb" method="post" action="{{ feedback_url }}">
+  <h2>Ваш відгук</h2>
+  <p class="secondary">Три короткі питання — це найцінніше, що ви можете дати нам на бета-тесті.</p>
+  <fieldset>
+    <legend>Наскільки корисний цей звіт?</legend>
+    <div class="opts">{% for n in range(1, 6) %}<label><input type="radio" name="usefulness" value="{{ n }}" required> {{ n }}</label>{% endfor %}
+      <span class="muted">(1 — марний, 5 — дуже корисний)</span></div>
+  </fieldset>
+  <fieldset>
+    <legend>Чи вплинув звіт на ваше рішення щодо цієї адреси?</legend>
+    <div class="opts"><label><input type="radio" name="decision" value="yes" required> Так</label>
+      <label><input type="radio" name="decision" value="no"> Ні</label>
+      <label><input type="radio" name="decision" value="unsure"> Поки не знаю</label></div>
+  </fieldset>
+  <fieldset>
+    <legend>Чи заплатили б ви за такий звіт{% if price_label %} {{ price_label }}{% endif %}?</legend>
+    <div class="opts"><label><input type="radio" name="would_pay" value="yes" required> Так</label>
+      <label><input type="radio" name="would_pay" value="no"> Ні</label>
+      <label><input type="radio" name="would_pay" value="unsure"> Можливо</label></div>
+  </fieldset>
+  <fieldset>
+    <legend><label for="fb-comment">Чого бракує або що неправильно? (необов'язково)</label></legend>
+    <textarea id="fb-comment" name="comment" maxlength="2000"></textarea>
+  </fieldset>
+  <button type="submit">Надіслати відгук</button>
+</form>
+{% endif %}
 </body>
 </html>

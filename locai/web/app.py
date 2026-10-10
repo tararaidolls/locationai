@@ -1,8 +1,15 @@
-"""FastAPI app: address form → free preview → checkout → paid report (HTML + PDF).
+"""FastAPI app: address form → free preview → full report (HTML + PDF).
+
+Two modes:
+  beta  (LOCAI_FREE_REPORTS > 0, default 20): the first N full reports are free in exchange for an
+        email; afterwards visitors can join a waitlist. No payment setup needed.
+  paid  (LOCAI_FREE_REPORTS=0): Stripe Checkout, or a demo payment when Stripe is not configured.
+Every web report carries a short feedback form.
 
 Run: python -m locai serve   (or: uvicorn locai.web.app:create_app --factory)
 
 Environment:
+  LOCAI_FREE_REPORTS     free full reports in the beta (default 20; 0 switches to paid mode)
   LOCAI_PRICE_CENTS      report price in minor units (default 3900)
   LOCAI_CURRENCY         ISO currency (default eur)
   LOCAI_BASE_URL         public URL used in payment redirects (default: from the request)
@@ -11,6 +18,7 @@ Environment:
 """
 import logging
 import os
+import re
 import threading
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -44,6 +52,16 @@ class Settings:
     stripe_secret_key: str | None = os.environ.get("STRIPE_SECRET_KEY")
     stripe_webhook_secret: str | None = os.environ.get("STRIPE_WEBHOOK_SECRET")
     enabled_cities: list[str] = field(default_factory=lambda: sorted(CITIES))
+    free_reports: int = int(os.environ.get("LOCAI_FREE_REPORTS", "20"))
+
+
+EMAIL_RE = re.compile(r"^[^@\s]{1,64}@[^@\s]{1,190}\.[^@\s]{2,24}$")
+CHOICES = {"yes", "no", "unsure"}
+
+
+def _clean_email(raw: str) -> str | None:
+    email = raw.strip().lower()
+    return email if EMAIL_RE.match(email) else None
 
 
 def _price_label(cents: int, currency: str) -> str:
@@ -57,7 +75,11 @@ def create_app(settings: Settings | None = None, service: LocationService | None
     svc = service or LocationService()
     store = OrderStore(settings.db_path)
     settings.reports_dir.mkdir(parents=True, exist_ok=True)
-    if settings.stripe_secret_key:
+    beta = settings.free_reports > 0
+    if beta:
+        payments = None
+        log.warning("Beta mode: the first %d full reports are free; payments are off.", settings.free_reports)
+    elif settings.stripe_secret_key:
         if not settings.stripe_webhook_secret:
             raise RuntimeError("STRIPE_WEBHOOK_SECRET is required when STRIPE_SECRET_KEY is set")
         payments = StripePayments(settings.stripe_secret_key, settings.stripe_webhook_secret)
@@ -73,8 +95,12 @@ def create_app(settings: Settings | None = None, service: LocationService | None
     report_locks: dict[str, threading.Lock] = {}
     locks_guard = threading.Lock()
 
+    def free_left() -> int:
+        return max(settings.free_reports - store.free_used(), 0) if beta else 0
+
     def page(request: Request, name: str, status: int = 200, **ctx) -> HTMLResponse:
-        base = {"price": price, "demo": payments.name == "demo", "profiles": profiles,
+        base = {"price": price, "beta": beta, "free_total": settings.free_reports,
+                "demo": payments is not None and payments.name == "demo", "profiles": profiles,
                 "cities": [{"key": k, "name": CITIES[k].name} for k in settings.enabled_cities]}
         return templates.TemplateResponse(request, name, {**base, **ctx}, status_code=status)
 
@@ -99,7 +125,8 @@ def create_app(settings: Settings | None = None, service: LocationService | None
             lock = report_locks.setdefault(order.token, threading.Lock())
         with lock:
             if not html_path.exists():
-                html_text = svc.report_html(rescore(order), download_url=f"/report/{order.token}.pdf")
+                html_text = svc.report_html(rescore(order), download_url=f"/report/{order.token}.pdf",
+                                            feedback_url=f"/feedback/{order.token}", price_label=price)
                 html_path.write_text(html_text, encoding="utf-8")
             if not pdf_path.exists():
                 from ..pdf_report import html_to_pdf
@@ -145,10 +172,46 @@ def create_app(settings: Settings | None = None, service: LocationService | None
         locked = [{"name": name, "width": int(rng.integers(30, 90))} for name in DIMENSIONS.values()]
         return page(request, "preview.html", order=order, profile_label=s.scorer.profile.label,
                     grade_text=GRADE_TEXT[order.grade], percentile=f"{s.result.city_percentile:.0f}",
-                    teaser=teaser, locked=locked)
+                    teaser=teaser, locked=locked, free_left=free_left())
+
+    @app.post("/claim/{token}")
+    def claim(request: Request, token: str, email: str = Form(...), contact_ok: str = Form("")):
+        """Beta: unlock the full report for free in exchange for an email."""
+        if not beta:
+            raise HTTPException(404)
+        order = order_or_404(token)
+        clean = _clean_email(email)
+        if clean is None:
+            return RedirectResponse(f"/preview/{token}?bad_email=1", status_code=303)
+        if store.claim_free(token, clean, bool(contact_ok), settings.free_reports):
+            return RedirectResponse(f"/report/{token}", status_code=303)
+        store.add_waitlist(clean, order.token)
+        return page(request, "thanks.html", title="Безкоштовні звіти закінчились",
+                    message="Ми додали вас до листа очікування і напишемо, щойно відкриємо доступ.")
+
+    @app.post("/waitlist")
+    def waitlist(request: Request, email: str = Form(...), token: str = Form("")):
+        clean = _clean_email(email)
+        if clean is None:
+            raise HTTPException(422, "Некоректний email")
+        store.add_waitlist(clean, token or None)
+        return page(request, "thanks.html", title="Дякуємо!",
+                    message="Ви в листі очікування. Напишемо, щойно з'являться нові звіти.")
+
+    @app.post("/feedback/{token}")
+    def feedback(request: Request, token: str, usefulness: int = Form(...), decision: str = Form(...),
+                 would_pay: str = Form(...), comment: str = Form("")):
+        order = order_or_404(token)
+        if not order.paid or not 1 <= usefulness <= 5 or decision not in CHOICES or would_pay not in CHOICES:
+            raise HTTPException(422, "Некоректний відгук")
+        store.add_feedback(token, usefulness, decision, would_pay, comment.strip()[:2000] or None)
+        return page(request, "thanks.html", title="Дякуємо за відгук!",
+                    message="Він допоможе зробити звіт кориснішим.", back=f"/report/{token}")
 
     @app.post("/checkout/{token}")
     def checkout(request: Request, token: str):
+        if payments is None:
+            raise HTTPException(404)
         order = order_or_404(token)
         if order.paid:
             return RedirectResponse(f"/report/{token}", status_code=303)
@@ -170,7 +233,7 @@ def create_app(settings: Settings | None = None, service: LocationService | None
     def report(request: Request, token: str):
         order = order_or_404(token)
         if not order.paid:
-            if payments.name == "stripe" and request.query_params.get("paid"):
+            if payments is not None and payments.name == "stripe" and request.query_params.get("paid"):
                 # Returned from Stripe before the webhook arrived: wait and refresh.
                 return page(request, "pending.html", order=order)
             return RedirectResponse(f"/preview/{token}", status_code=303)
@@ -191,7 +254,8 @@ def create_app(settings: Settings | None = None, service: LocationService | None
 
     @app.get("/healthz")
     def healthz():
-        return {"ok": True, "payments": payments.name}
+        return {"ok": True, "mode": "beta" if beta else "paid", "payments": payments.name if payments else None,
+                "free_left": free_left()}
 
     # --- payments ----------------------------------------------------------------------
     if isinstance(payments, StripePayments):
@@ -206,7 +270,7 @@ def create_app(settings: Settings | None = None, service: LocationService | None
             if event and store.get(event.token):
                 store.mark_paid(event.token, event.payment_ref, event.email)
             return {"received": True}
-    else:
+    elif isinstance(payments, DemoPayments):
         @app.get("/demo-pay/{token}", response_class=HTMLResponse)
         def demo_pay_form(request: Request, token: str):
             order = order_or_404(token)

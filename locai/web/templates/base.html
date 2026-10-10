@@ -10,6 +10,7 @@
 <body>
 <header class="top">
   <a class="logo" href="/">LOCATION <span>AI</span></a>
+  {% if beta %}<span class="badge">бета-тест</span>{% endif %}
   {% if demo %}<span class="badge" title="Stripe не налаштовано — гроші не списуються">демо-режим оплати</span>{% endif %}
 </header>
 <main>

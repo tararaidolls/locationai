@@ -34,6 +34,24 @@
     </ul>
     {% if order.paid %}
       <a class="btn primary" href="/report/{{ order.token }}">Відкрити повний звіт</a>
+    {% elif beta and free_left > 0 %}
+      <form class="claim" method="post" action="/claim/{{ order.token }}">
+        {% if request.query_params.get("bad_email") %}<div class="alert" role="alert">Перевірте email: здається, в ньому помилка.</div>{% endif %}
+        <label for="email">Email, щоб зберегти доступ до звіту</label>
+        <input id="email" name="email" type="email" required maxlength="254" placeholder="you@example.com" autocomplete="email">
+        <label class="check"><input type="checkbox" name="contact_ok" value="1" checked>
+          Можна написати мені й запитати, чи був звіт корисним</label>
+        <button class="btn primary" type="submit">Отримати повний звіт безкоштовно</button>
+      </form>
+      <p class="hint">Бета-тест: залишилось {{ free_left }} з {{ free_total }} безкоштовних звітів. Email не передаємо третім особам.</p>
+    {% elif beta %}
+      <p class="secondary">Безкоштовні звіти бета-тесту закінчились. Залиште email — напишемо, щойно відкриємо доступ.</p>
+      <form class="claim" method="post" action="/waitlist">
+        <input type="hidden" name="token" value="{{ order.token }}">
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" required maxlength="254" placeholder="you@example.com" autocomplete="email">
+        <button class="btn primary" type="submit">Додати мене в лист очікування</button>
+      </form>
     {% else %}
       <form method="post" action="/checkout/{{ order.token }}">
         <button class="btn primary" type="submit">Отримати повний звіт — {{ price }}</button>

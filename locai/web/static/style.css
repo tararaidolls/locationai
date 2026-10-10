@@ -87,6 +87,10 @@ input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: 1p
 .ticks { margin: 0 0 6px; padding-left: 20px; color: var(--text-secondary); }
 .ticks li { margin-bottom: 4px; }
 
+.claim { display: grid; gap: 8px; max-width: 460px; margin-top: 8px; }
+.claim label { font-size: 14px; font-weight: 600; color: var(--text-secondary); }
+.claim .check { display: flex; gap: 8px; align-items: flex-start; font-weight: 400; }
+.claim .check input { width: auto; margin-top: 4px; }
 .narrow { max-width: 520px; padding-top: 32px; }
 .narrow h1 { font-size: 28px; margin-bottom: 16px; }
 .narrow form { display: grid; gap: 8px; margin-top: 16px; }

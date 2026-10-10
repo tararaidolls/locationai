@@ -27,7 +27,11 @@
       </div>
     </div>
     <button class="btn primary" type="submit">Оцінити безкоштовно</button>
+    {% if beta %}
+    <p class="hint">Бета-тест: перші {{ free_total }} повних звітів з картою та PDF — безкоштовно.</p>
+    {% else %}
     <p class="hint">Безкоштовно: загальний бал і місце серед локацій міста. Повний звіт з картою та PDF — {{ price }}.</p>
+    {% endif %}
   </form>
 </section>
 

@@ -24,7 +24,8 @@ SERVICE = LocationService()  # share loaded city data between tests
 
 def make_client(tmp_path, **overrides) -> TestClient:
     settings = Settings(db_path=tmp_path / "orders.sqlite", reports_dir=tmp_path / "reports",
-                        stripe_secret_key=None, stripe_webhook_secret=None, base_url="http://testserver")
+                        stripe_secret_key=None, stripe_webhook_secret=None, base_url="http://testserver",
+                        free_reports=0)
     for k, v in overrides.items():
         setattr(settings, k, v)
     return TestClient(create_app(settings, SERVICE), follow_redirects=False)
@@ -132,3 +133,54 @@ def test_stripe_checkout_and_webhook(tmp_path, monkeypatch):
     body, sig = _signed(event, secret)
     assert c.post("/stripe/webhook", content=body, headers={"stripe-signature": sig}).status_code == 200
     assert c.get(f"/api/orders/{token}").json()["status"] == "paid"
+
+
+# --- beta mode ---------------------------------------------------------------------------
+
+def test_beta_claim_unlocks_report_and_counts_down(tmp_path):
+    c = make_client(tmp_path, free_reports=2)
+    assert c.post(f"/checkout/{start_order(c)}").status_code == 404  # no payments in the beta
+    token = start_order(c)
+    assert "залишилось 2 з 2" in c.get(f"/preview/{token}").text
+
+    r = c.post(f"/claim/{token}", data={"email": "not-an-email"})
+    assert r.headers["location"] == f"/preview/{token}?bad_email=1"
+    assert c.get(f"/report/{token}").status_code == 303  # still locked
+
+    r = c.post(f"/claim/{token}", data={"email": "Owner@Example.com", "contact_ok": "1"})
+    assert r.headers["location"] == f"/report/{token}"
+    page = c.get(f"/report/{token}").text
+    assert "Ваш відгук" in page and "Завантажити PDF" in page
+    # Claiming the same report again does not use another free slot.
+    c.post(f"/claim/{token}", data={"email": "owner@example.com"})
+    assert c.get("/healthz").json()["free_left"] == 1
+
+
+def test_beta_quota_exhausted_goes_to_waitlist(tmp_path):
+    c = make_client(tmp_path, free_reports=1)
+    first, second = start_order(c), start_order(c)
+    c.post(f"/claim/{first}", data={"email": "a@example.com"})
+    assert "лист очікування" in c.get(f"/preview/{second}").text.lower()
+    r = c.post(f"/claim/{second}", data={"email": "b@example.com"})
+    assert r.status_code == 200 and "закінчились" in r.text
+    assert c.get(f"/report/{second}").status_code == 303
+    assert c.post("/waitlist", data={"email": "c@example.com"}).status_code == 200
+    assert c.post("/waitlist", data={"email": "nope"}).status_code == 422
+
+
+def test_feedback_is_stored_only_for_unlocked_reports(tmp_path):
+    from locai.web.stats import beta_stats
+
+    c = make_client(tmp_path, free_reports=5)
+    token = start_order(c)
+    fb = {"usefulness": "4", "decision": "yes", "would_pay": "unsure", "comment": "Бракує оренди"}
+    assert c.post(f"/feedback/{token}", data=fb).status_code == 422  # report not unlocked yet
+    c.post(f"/claim/{token}", data={"email": "a@example.com", "contact_ok": "1"})
+    assert c.post(f"/feedback/{token}", data={**fb, "usefulness": "9"}).status_code == 422
+    r = c.post(f"/feedback/{token}", data=fb)
+    assert r.status_code == 200 and "Дякуємо за відгук" in r.text
+
+    out = beta_stats(tmp_path / "orders.sqlite", 5, tmp_path / "csv")
+    assert "Безкоштовних повних звітів:   1 з 5" in out
+    assert "Корисність (1–5), середня:    4.0" in out and "Бракує оренди" in out
+    assert (tmp_path / "csv" / "feedback.csv").read_text(encoding="utf-8").count("\n") == 2

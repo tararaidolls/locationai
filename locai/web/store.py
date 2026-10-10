@@ -1,4 +1,7 @@
-"""Orders in SQLite. One row per scored address; it becomes a paid report after checkout."""
+"""Orders, feedback and the beta waitlist in SQLite.
+
+One order row per scored address; it becomes a full report after payment (or a free beta claim).
+"""
 import secrets
 import sqlite3
 import threading
@@ -27,7 +30,23 @@ CREATE TABLE IF NOT EXISTS orders (
     paid_at        REAL
 );
 CREATE INDEX IF NOT EXISTS orders_payment_ref ON orders(payment_ref);
+CREATE TABLE IF NOT EXISTS feedback (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    token          TEXT NOT NULL REFERENCES orders(token),
+    created_at     REAL NOT NULL,
+    usefulness     INTEGER NOT NULL,           -- 1..5
+    decision       TEXT NOT NULL,              -- yes | no | unsure
+    would_pay      TEXT NOT NULL,              -- yes | no | unsure
+    comment        TEXT
+);
+CREATE TABLE IF NOT EXISTS waitlist (
+    email          TEXT PRIMARY KEY,
+    created_at     REAL NOT NULL,
+    token          TEXT
+);
 """
+FREE_REF = "free"
+MIGRATIONS = ["ALTER TABLE orders ADD COLUMN contact_ok INTEGER NOT NULL DEFAULT 0"]
 
 
 @dataclass
@@ -49,6 +68,7 @@ class Order:
     payment_ref: str | None
     email: str | None
     paid_at: float | None
+    contact_ok: bool = False
 
     @property
     def paid(self) -> bool:
@@ -63,6 +83,12 @@ class OrderStore:
         self._lock = threading.Lock()
         with self._lock:
             self._db.executescript(SCHEMA)
+            for sql in MIGRATIONS:
+                try:
+                    self._db.execute(sql)
+                except sqlite3.OperationalError:  # already applied
+                    pass
+            self._db.commit()
 
     def create(self, **fields) -> Order:
         token = secrets.token_urlsafe(16)
@@ -80,6 +106,7 @@ class OrderStore:
             return None
         d = dict(row)
         d["address_exact"] = bool(d["address_exact"])
+        d["contact_ok"] = bool(d["contact_ok"])
         return Order(**d)
 
     def set_payment_ref(self, token: str, ref: str) -> None:
@@ -93,3 +120,40 @@ class OrderStore:
                 "email = COALESCE(?, email) WHERE token = ? AND status != 'paid'",
                 (time.time(), payment_ref, email, token),
             )
+
+    # --- free beta ---------------------------------------------------------------------
+    def free_used(self) -> int:
+        with self._lock:
+            return self._db.execute("SELECT COUNT(*) FROM orders WHERE payment_ref = ?", (FREE_REF,)).fetchone()[0]
+
+    def claim_free(self, token: str, email: str, contact_ok: bool, limit: int) -> bool:
+        """Unlock the report for free if the beta quota is not used up. Atomic under concurrent claims."""
+        with self._lock, self._db:
+            row = self._db.execute("SELECT status FROM orders WHERE token = ?", (token,)).fetchone()
+            if row is None:
+                return False
+            if row["status"] == "paid":
+                return True
+            used = self._db.execute("SELECT COUNT(*) FROM orders WHERE payment_ref = ?", (FREE_REF,)).fetchone()[0]
+            if used >= limit:
+                return False
+            self._db.execute(
+                "UPDATE orders SET status = 'paid', paid_at = ?, payment_ref = ?, email = ?, contact_ok = ? "
+                "WHERE token = ?", (time.time(), FREE_REF, email, int(contact_ok), token))
+            return True
+
+    def add_waitlist(self, email: str, token: str | None) -> None:
+        with self._lock, self._db:
+            self._db.execute("INSERT OR IGNORE INTO waitlist (email, created_at, token) VALUES (?, ?, ?)",
+                             (email, time.time(), token))
+
+    # --- feedback ------------------------------------------------------------------------
+    def add_feedback(self, token: str, usefulness: int, decision: str, would_pay: str, comment: str | None) -> None:
+        with self._lock, self._db:
+            self._db.execute(
+                "INSERT INTO feedback (token, created_at, usefulness, decision, would_pay, comment) "
+                "VALUES (?, ?, ?, ?, ?, ?)", (token, time.time(), usefulness, decision, would_pay, comment))
+
+    def query(self, sql: str, params: tuple = ()) -> list[dict]:
+        with self._lock:
+            return [dict(r) for r in self._db.execute(sql, params).fetchall()]
