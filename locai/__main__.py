@@ -2,18 +2,18 @@
 
   python -m locai build-city lyon
   python -m locai score "10 rue de la République" --profile cafe [--city lyon] [--json out.json] [--pdf out.pdf]
+  python -m locai serve [--port 8000]
 """
 import argparse
 import json
 import logging
 import sys
 
-from .city import build_city, load_city
+from .city import build_city
 from .config import CITIES
-from .geocode import geocode, reverse
-from .profiles import list_profiles, load_profile
+from .profiles import list_profiles
 from .report import to_json, to_text
-from .scoring import Scorer
+from .service import LocationService
 
 
 def main(argv=None) -> int:
@@ -29,6 +29,9 @@ def main(argv=None) -> int:
     s.add_argument("--pdf", help="зберегти звіт у PDF (потрібен Chromium/Chrome)")
     s.add_argument("--html", help="зберегти веб-версію звіту в HTML")
     s.add_argument("--no-nearby", action="store_true", help="не шукати кращих локацій поруч (швидше)")
+    w = sub.add_parser("serve", help="запустити сайт")
+    w.add_argument("--host", default="127.0.0.1")
+    w.add_argument("--port", type=int, default=8000)
     ap.add_argument("-v", "--verbose", action="store_true")
     args = ap.parse_args(argv)
     logging.basicConfig(level=logging.INFO if args.verbose else logging.WARNING, format="%(asctime)s %(message)s")
@@ -37,30 +40,30 @@ def main(argv=None) -> int:
         build_city(CITIES[args.city])
         return 0
 
-    city = load_city(CITIES[args.city])
-    profile = load_profile(args.profile)
+    if args.cmd == "serve":
+        import uvicorn
+
+        from .web.app import create_app
+
+        uvicorn.run(create_app(), host=args.host, port=args.port)
+        return 0
+
+    svc = LocationService()
     try:
-        geo = geocode(args.address, city.addresses, CITIES[args.city].default_locality)
+        geo = svc.geocode(args.city, args.address)
     except ValueError as e:
         print(e, file=sys.stderr)
         return 2
-    if not city.city.contains(geo.lon, geo.lat):
-        print(f"Адреса поза зоною покриття ({city.city.name}).", file=sys.stderr)
-        return 2
-    x, y = city.proj.to_xy(geo.lon, geo.lat)
-    scorer = Scorer(city, profile)
-    result = scorer.score_xy(float(x), float(y))
-    nearby = [] if args.no_nearby else scorer.better_nearby(float(x), float(y), result.total)
-    for n in nearby:
-        n["address"] = reverse(n["lat"], n["lon"], city.addresses)
-    print(to_text(geo, profile, result, city.city.name, nearby))
+    s = svc.score(args.city, args.profile, geo)
+    nearby = [] if args.no_nearby else svc.nearby(s)
+    print(to_text(geo, s.scorer.profile, s.result, s.city.city.name, nearby))
     if args.json:
         with open(args.json, "w") as f:
-            json.dump(to_json(geo, profile, result, nearby), f, ensure_ascii=False, indent=2)
+            json.dump(to_json(geo, s.scorer.profile, s.result, nearby), f, ensure_ascii=False, indent=2)
     if args.pdf or args.html:
         from .pdf_report import build_context, html_to_pdf, render_html
 
-        page = render_html(build_context(city, scorer, geo, result, nearby))
+        page = render_html(build_context(s.city, s.scorer, geo, s.result, nearby))
         if args.html:
             with open(args.html, "w", encoding="utf-8") as f:
                 f.write(page)

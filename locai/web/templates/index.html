@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+  <h1>Чи вдала ця адреса для вашого бізнесу?</h1>
+  <p class="lead">Введіть адресу й тип бізнесу — за кілька секунд отримаєте оцінку локації: попит поруч,
+    конкуренти, пішохідний трафік і сусіди, що приводять клієнтів.</p>
+
+  <form class="card form" method="post" action="/score" autocomplete="off">
+    {% if error %}<div class="alert" role="alert">{{ error }}</div>{% endif %}
+    <label for="address">Адреса</label>
+    <input id="address" name="address" list="suggestions" required maxlength="200"
+           placeholder="напр. 12 rue Paul Bert" value="{{ address or '' }}">
+    <datalist id="suggestions"></datalist>
+
+    <div class="row">
+      <div>
+        <label for="profile">Тип бізнесу</label>
+        <select id="profile" name="profile" required>
+          {% for p in profiles %}<option value="{{ p.id }}" {% if p.id == profile %}selected{% endif %}>{{ p.label }}</option>{% endfor %}
+        </select>
+      </div>
+      <div>
+        <label for="city">Місто</label>
+        <select id="city" name="city">
+          {% for c in cities %}<option value="{{ c.key }}">{{ c.name }}</option>{% endfor %}
+        </select>
+      </div>
+    </div>
+    <button class="btn primary" type="submit">Оцінити безкоштовно</button>
+    <p class="hint">Безкоштовно: загальний бал і місце серед локацій міста. Повний звіт з картою та PDF — {{ price }}.</p>
+  </form>
+</section>
+
+<section class="how">
+  <div><b>1</b><h3>Реальна зона клієнтів</h3><p>Рахуємо, хто живе й працює в 5–15 хвилинах пішки вулицями, а не в колі на карті.</p></div>
+  <div><b>2</b><h3>Конкуренти й синергії</h3><p>Скільки схожих закладів поруч і які сусіди приводять ваших клієнтів.</p></div>
+  <div><b>3</b><h3>Порівняння з містом</h3><p>Бачите, наскільки адреса краща за інші комерційні локації — і де поруч є краще місце.</p></div>
+</section>
+{% endblock %}
+{% block scripts %}<script src="/static/app.js" defer></script>{% endblock %}

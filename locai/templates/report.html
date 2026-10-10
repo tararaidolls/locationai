@@ -110,9 +110,35 @@
   .disclaimer { margin-top: 3mm; padding: 3mm 4mm; background: var(--surface-2); border-radius: 2.5mm; font-size: 8pt;
                 color: var(--text-secondary); }
   .section { margin-bottom: 6mm; break-inside: avoid; }
+
+  /* Screen-only: toolbar and responsive layout for the web version of the report. */
+  .toolbar { display: none; }
+  @media screen {
+    body { padding: 0 16px 48px; }
+    .toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; max-width: 182mm;
+               margin: 0 auto 8mm; padding: 14px 0; border-bottom: 1px solid var(--rule); }
+    .toolbar a { font-weight: 650; text-decoration: none; }
+    .toolbar .logo { color: var(--text-primary); font-weight: 750; letter-spacing: 0.02em; }
+    .toolbar .logo span { color: var(--accent); }
+    .toolbar .pdf { background: var(--accent); color: #fff; padding: 10px 16px; border-radius: 10px; }
+    .page + .page { margin-top: 14mm; padding-top: 8mm; border-top: 1px solid var(--rule); }
+  }
+  @media screen and (max-width: 640px) {
+    .hero, .cols { grid-template-columns: 1fr; }
+    .tiles { grid-template-columns: 1fr 1fr; }
+    .dims .name { width: auto; }
+    .dims .w { display: none; }
+    table.data { font-size: 8pt; }
+  }
 </style>
 </head>
 <body>
+{% if download_url %}
+<nav class="toolbar">
+  <a class="logo" href="/">LOCATION <span>AI</span></a>
+  <a class="pdf" href="{{ download_url }}">Завантажити PDF</a>
+</nav>
+{% endif %}
 
 <!-- ============ Page 1: summary ============ -->
 <section class="page">

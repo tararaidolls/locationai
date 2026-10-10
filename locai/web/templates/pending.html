@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Підтверджуємо оплату — Location AI{% endblock %}
+{% block content %}
+<section class="narrow">
+  <h1>Підтверджуємо оплату…</h1>
+  <p class="secondary">Зазвичай це кілька секунд. Сторінка оновиться сама, щойно звіт буде готовий.</p>
+  <p class="secondary">Якщо нічого не змінюється понад хвилину, збережіть це посилання й відкрийте його пізніше.</p>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+(function poll() {
+  fetch("/api/orders/{{ order.token }}").then(r => r.json()).then(d => {
+    if (d.status === "paid") location.replace("/report/{{ order.token }}");
+    else setTimeout(poll, 2000);
+  }).catch(() => setTimeout(poll, 4000));
+})();
+</script>
+{% endblock %}

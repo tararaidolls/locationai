@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Оцінка: {{ order.address }} — Location AI{% endblock %}
+{% block content %}
+<section class="preview">
+  <p class="eyebrow">{{ profile_label }} · зона {{ teaser.walk }} хв пішки</p>
+  <h1 class="addr">{{ order.address }}</h1>
+  {% if not order.address_exact %}<p class="warn">⚠ Точну адресу не знайдено — використано найближчу.</p>{% endif %}
+
+  <div class="result">
+    <div class="score-card">
+      <div class="score">{{ order.score|round|int }}<small>/100</small></div>
+      <div class="grade"><b>{{ order.grade }}</b>{{ grade_text }}</div>
+    </div>
+    <div class="facts">
+      <div class="fact"><span class="v">{{ percentile }}%</span><span class="l">комерційних локацій міста ця адреса випереджає</span></div>
+      <div class="fact"><span class="v">{{ teaser.population }}</span><span class="l">мешканців у {{ teaser.walk }} хв пішки</span></div>
+      <div class="fact"><span class="v">{{ teaser.competitors }}</span><span class="l">конкурентів у {{ teaser.walk }} хв пішки</span></div>
+    </div>
+  </div>
+
+  <div class="card locked">
+    <h2>У повному звіті</h2>
+    <div class="locked-bars" aria-hidden="true">
+      {% for d in locked %}
+      <div class="lb"><span>{{ d.name }}</span><i><s style="width: {{ d.width }}%"></s></i></div>
+      {% endfor %}
+    </div>
+    <ul class="ticks">
+      <li>Оцінка за 6 вимірами і 12 метриками з поясненням</li>
+      <li>Карта зони: вулиці за часом пішки, конкуренти, синергії</li>
+      <li>Список найближчих конкурентів</li>
+      <li>Кращі адреси в радіусі 1 км з їхніми балами</li>
+      <li>PDF на 3 сторінки для партнерів, банку чи орендодавця</li>
+    </ul>
+    {% if order.paid %}
+      <a class="btn primary" href="/report/{{ order.token }}">Відкрити повний звіт</a>
+    {% else %}
+      <form method="post" action="/checkout/{{ order.token }}">
+        <button class="btn primary" type="submit">Отримати повний звіт — {{ price }}</button>
+      </form>
+      <p class="hint">Разовий платіж. Посилання на звіт залишиться у вас.</p>
+    {% endif %}
+  </div>
+  <p><a href="/">← Оцінити іншу адресу</a></p>
+</section>
+{% endblock %}

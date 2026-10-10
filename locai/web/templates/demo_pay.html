@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Оплата — Location AI{% endblock %}
+{% block content %}
+<section class="narrow">
+  <h1>Оплата звіту</h1>
+  <div class="card">
+    <p class="secondary">{{ order.address }}</p>
+    <p class="total">До сплати: <b>{{ price }}</b></p>
+    <div class="alert">Демо-режим: Stripe не налаштовано, гроші не списуються. На робочому сайті тут буде сторінка Stripe Checkout.</div>
+    <form method="post" action="/demo-pay/{{ order.token }}">
+      <label for="email">Email для звіту (необов'язково)</label>
+      <input id="email" name="email" type="email" maxlength="200" placeholder="you@example.com">
+      <button class="btn primary" type="submit">Оплатити {{ price }} (демо)</button>
+    </form>
+  </div>
+  <p><a href="/preview/{{ order.token }}">← Назад</a></p>
+</section>
+{% endblock %}

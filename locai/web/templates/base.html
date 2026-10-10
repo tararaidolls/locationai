@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Location AI — оцінка локації для бізнесу{% endblock %}</title>
+<meta name="description" content="Оцінка адреси для кав'ярні, ресторану, салону краси чи зоомагазину на основі відкритих даних.">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="top">
+  <a class="logo" href="/">LOCATION <span>AI</span></a>
+  {% if demo %}<span class="badge" title="Stripe не налаштовано — гроші не списуються">демо-режим оплати</span>{% endif %}
+</header>
+<main>
+{% block content %}{% endblock %}
+</main>
+<footer class="foot">
+  Дані: © Overture Maps Foundation, © OpenStreetMap contributors, Meta HRSL (CC BY 4.0).
+  Оцінка аналітична і не гарантує комерційного успіху.
+</footer>
+{% block scripts %}{% endblock %}
+</body>
+</html>
